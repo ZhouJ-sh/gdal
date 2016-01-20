@@ -38,12 +38,11 @@ CPL_CVSID("$Id$");
 /************************************************************************/
 
 OGRMemDataSource::OGRMemDataSource( const char *pszFilename,
-                                    CPL_UNUSED char **papszOptions)
-{
-    pszName = CPLStrdup(pszFilename);
-    papoLayers = NULL;
-    nLayers = 0;
-}
+                                    char ** /* papszOptions */) :
+    papoLayers(NULL),
+    nLayers(0),
+    pszName(CPLStrdup(pszFilename))
+{}
 
 /************************************************************************/
 /*                         ~OGRMemDataSource()                          */
@@ -56,7 +55,7 @@ OGRMemDataSource::~OGRMemDataSource()
 
     for( int i = 0; i < nLayers; i++ )
         delete papoLayers[i];
-    
+
     CPLFree( papoLayers );
 }
 
@@ -73,10 +72,8 @@ OGRMemDataSource::ICreateLayer( const char * pszLayerName,
 /* -------------------------------------------------------------------- */
 /*      Create the layer object.                                        */
 /* -------------------------------------------------------------------- */
-    OGRMemLayer *poLayer;
+    OGRMemLayer *poLayer = new OGRMemLayer( pszLayerName, poSRS, eType );
 
-    poLayer = new OGRMemLayer( pszLayerName, poSRS, eType );
-    
     if( CSLFetchBoolean(papszOptions, "ADVERTIZE_UTF8", FALSE) )
         poLayer->SetAdvertizeUTF8(TRUE);
 
@@ -85,7 +82,7 @@ OGRMemDataSource::ICreateLayer( const char * pszLayerName,
 /* -------------------------------------------------------------------- */
     papoLayers = (OGRMemLayer **)
         CPLRealloc( papoLayers,  sizeof(OGRMemLayer *) * (nLayers+1) );
-    
+
     papoLayers[nLayers++] = poLayer;
 
     return poLayer;
@@ -104,13 +101,13 @@ OGRErr OGRMemDataSource::DeleteLayer( int iLayer )
 
         for( int i = iLayer+1; i < nLayers; i++ )
             papoLayers[i-1] = papoLayers[i];
-        
+
         nLayers--;
-        
+
         return OGRERR_NONE;
     }
-    else
-        return OGRERR_FAILURE;
+
+    return OGRERR_FAILURE;
 }
 
 /************************************************************************/
@@ -122,14 +119,14 @@ int OGRMemDataSource::TestCapability( const char * pszCap )
 {
     if( EQUAL(pszCap,ODsCCreateLayer) )
         return TRUE;
-    else if( EQUAL(pszCap,ODsCDeleteLayer) )
+    if( EQUAL(pszCap,ODsCDeleteLayer) )
         return TRUE;
-    else if( EQUAL(pszCap,ODsCCreateGeomFieldAfterCreateLayer) )
+    if( EQUAL(pszCap,ODsCCreateGeomFieldAfterCreateLayer) )
         return TRUE;
-    else if( EQUAL(pszCap,ODsCCurveGeometries) )
+    if( EQUAL(pszCap,ODsCCurveGeometries) )
         return TRUE;
-    else
-        return FALSE;
+
+    return FALSE;
 }
 
 /************************************************************************/
@@ -141,6 +138,6 @@ OGRLayer *OGRMemDataSource::GetLayer( int iLayer )
 {
     if( iLayer < 0 || iLayer >= nLayers )
         return NULL;
-    else
-        return papoLayers[iLayer];
+
+    return papoLayers[iLayer];
 }

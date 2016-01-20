@@ -6,21 +6,21 @@
 # Project:  GDAL/OGR Test Suite
 # Purpose:  Test basic read support for a all datatypes from a TIFF file.
 # Author:   Frank Warmerdam <warmerdam@pobox.com>
-# 
+#
 ###############################################################################
 # Copyright (c) 2003, Frank Warmerdam <warmerdam@pobox.com>
 # Copyright (c) 2007-2014, Even Rouault <even dot rouault at mines-paris dot org>
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Library General Public
 # License as published by the Free Software Foundation; either
 # version 2 of the License, or (at your option) any later version.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Library General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Library General Public
 # License along with this library; if not, write to the
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
@@ -41,8 +41,13 @@ from osgeo import gdal, osr
 
 gdaltest_list = []
 
-init_list = [ \
+init_list = [
     ('byte.tif', 1, 4672, None),
+    ('uint16_sgilog.tif', 1, 4672, None),
+    ('next_literalrow.tif', 1, 4, None),
+    ('next_literalspan.tif', 1, 4, None),
+    ('next_default_case.tif', 1, 4, None),
+    ('thunder.tif', 1, 3, None),
     ('int10.tif', 1, 4672, None),
     ('int12.tif', 1, 4672, None),
     ('int16.tif', 1, 4672, None),
@@ -60,8 +65,8 @@ init_list = [ \
     ('cfloat32.tif', 1, 5028, None),
     ('cfloat64.tif', 1, 5028, None),
 # The following four related partial final strip/tiles (#1179)
-    ('separate_tiled.tif', 2, 15234, None), 
-    ('seperate_strip.tif', 2, 15234, None),
+    ('separate_tiled.tif', 2, 15234, None),
+    ('seperate_strip.tif', 2, 15234, None),  # TODO: Spelling.
     ('contig_tiled.tif', 2, 15234, None),
     ('contig_strip.tif', 2, 15234, None),
     ('empty1bit.tif', 1, 0, None)]
@@ -71,7 +76,7 @@ init_list = [ \
 
 def tiff_read_off():
 
-    # Test absolute/offset directory access 
+    # Test absolute/offset directory access.
     ds = gdal.Open('GTIFF_DIR:off:408:data/byte.tif')
     if ds.GetRasterBand(1).Checksum() != 4672:
         return 'fail'
@@ -81,7 +86,8 @@ def tiff_read_off():
     if ds.GetRasterBand(1).Checksum() != 4672:
         return 'fail'
 
-    # Check that georeferencing is read properly when accessing "GTIFF_DIR" subdatasets (#3478)
+    # Check that georeferencing is read properly when accessing
+    # "GTIFF_DIR" subdatasets (#3478)
     gt = ds.GetGeoTransform()
     if gt != (440720.0, 60.0, 0.0, 3751320.0, 0.0, -60.0):
         gdaltest.post_reason('did not get expected geotransform')
@@ -92,13 +98,13 @@ def tiff_read_off():
 
 
 ###############################################################################
-# Confirm we interprete bands as alpha when we should, and not when we
+# Confirm we interpret bands as alpha when we should, and not when we
 # should not.
 
 def tiff_check_alpha():
 
     # Grey + alpha
-    
+
     ds = gdal.Open('data/stefan_full_greyalpha.tif')
 
     if ds.GetRasterBand(2).GetRasterColorInterpretation()!= gdal.GCI_AlphaBand:
@@ -108,8 +114,22 @@ def tiff_check_alpha():
 
     ds = None
 
+    gdal.SetConfigOption('GTIFF_FORCE_RGBA', 'YES')
+    ds = gdal.Open('data/stefan_full_greyalpha.tif')
+    gdal.SetConfigOption('GTIFF_FORCE_RGBA', None)
+    gdaltest.supports_force_rgba = False
+    if ds.RasterCount == 4:
+        gdaltest.supports_force_rgba = True
+    if gdaltest.supports_force_rgba:
+        got_cs = [ ds.GetRasterBand(i+1).Checksum() for i in range(ds.RasterCount) ]
+        if got_cs != [1970,1970,1970,10807]:
+            gdaltest.post_reason( 'fail')
+            print(got_cs)
+            return 'fail'
+        ds = None
+
     # RGB + alpha
-    
+
     ds = gdal.Open('data/stefan_full_rgba.tif')
 
     if ds.GetRasterBand(4).GetRasterColorInterpretation()!= gdal.GCI_AlphaBand:
@@ -119,8 +139,20 @@ def tiff_check_alpha():
 
     ds = None
 
+    if gdaltest.supports_force_rgba:
+        gdal.SetConfigOption('GTIFF_FORCE_RGBA', 'YES')
+        ds = gdal.Open('data/stefan_full_rgba.tif')
+        gdal.SetConfigOption('GTIFF_FORCE_RGBA', None)
+        got_cs = [ ds.GetRasterBand(i+1).Checksum() for i in range(ds.RasterCount) ]
+        # FIXME? Not the same as without GTIFF_FORCE_RGBA=YES
+        if got_cs != [11547, 57792, 35643, 10807]:
+            gdaltest.post_reason( 'fail')
+            print(got_cs)
+            return 'fail'
+        ds = None
+
     # RGB + undefined
-    
+
     ds = gdal.Open('data/stefan_full_rgba_photometric_rgb.tif')
 
     if ds.GetRasterBand(4).GetRasterColorInterpretation()!= gdal.GCI_Undefined:
@@ -130,9 +162,20 @@ def tiff_check_alpha():
 
     ds = None
 
+    if gdaltest.supports_force_rgba:
+        gdal.SetConfigOption('GTIFF_FORCE_RGBA', 'YES')
+        ds = gdal.Open('data/stefan_full_rgba_photometric_rgb.tif')
+        gdal.SetConfigOption('GTIFF_FORCE_RGBA', None)
+        got_cs = [ ds.GetRasterBand(i+1).Checksum() for i in range(ds.RasterCount) ]
+        if got_cs != [12603, 58561, 36064, 10807]:
+            gdaltest.post_reason( 'fail')
+            print(got_cs)
+            return 'fail'
+        ds = None
+
     return 'success'
-   
-    
+
+
 ###############################################################################
 # Test reading a CMYK tiff as RGBA image
 
@@ -371,7 +414,7 @@ def tiff_citation():
     build_info = gdal.VersionInfo('BUILD_INFO')
     if build_info.find('ESRI_BUILD=YES') == -1:
         return 'skip'
-        
+
     ds = gdal.Open('data/citation_mixedcase.tif')
     wkt = ds.GetProjectionRef()
 
@@ -390,44 +433,44 @@ def tiff_citation():
 def tiff_linearparmunits():
 
     # Test the file with the correct formulation.
-    
+
     ds = gdal.Open('data/spaf27_correct.tif')
     wkt = ds.GetProjectionRef()
     ds = None
 
     srs = osr.SpatialReference( wkt )
-    
+
     fe = srs.GetProjParm(osr.SRS_PP_FALSE_EASTING)
     if abs(fe-2000000.0) > 0.001:
         gdaltest.post_reason( 'did not get expected false easting (1)' )
         return 'fail'
-    
+
     # Test the file with the old (broken) GDAL formulation.
-    
+
     ds = gdal.Open('data/spaf27_brokengdal.tif')
     wkt = ds.GetProjectionRef()
     ds = None
 
     srs = osr.SpatialReference( wkt )
-    
+
     fe = srs.GetProjParm(osr.SRS_PP_FALSE_EASTING)
     if abs(fe-609601.219202438) > 0.001:
         gdaltest.post_reason( 'did not get expected false easting (2)' )
         return 'fail'
-    
+
     # Test the file when using an EPSG code.
-    
+
     ds = gdal.Open('data/spaf27_epsg.tif')
     wkt = ds.GetProjectionRef()
     ds = None
 
     srs = osr.SpatialReference( wkt )
-    
+
     fe = srs.GetProjParm(osr.SRS_PP_FALSE_EASTING)
     if abs(fe-2000000.0) > 0.001:
         gdaltest.post_reason( 'did not get expected false easting (3)' )
         return 'fail'
-    
+
     return 'success'
 
 ###############################################################################
@@ -436,48 +479,48 @@ def tiff_linearparmunits():
 def tiff_linearparmunits2():
 
     gdal.SetConfigOption( 'GTIFF_LINEAR_UNITS', 'BROKEN' )
-    
+
     # Test the file with the correct formulation.
-    
+
     ds = gdal.Open('data/spaf27_correct.tif')
     wkt = ds.GetProjectionRef()
     ds = None
 
     srs = osr.SpatialReference( wkt )
-    
+
     fe = srs.GetProjParm(osr.SRS_PP_FALSE_EASTING)
     if abs(fe-6561666.66667) > 0.001:
         gdaltest.post_reason( 'did not get expected false easting (1)' )
         return 'fail'
-    
+
     # Test the file with the correct formulation that is marked as correct.
-    
+
     ds = gdal.Open('data/spaf27_markedcorrect.tif')
     wkt = ds.GetProjectionRef()
     ds = None
 
     srs = osr.SpatialReference( wkt )
-    
+
     fe = srs.GetProjParm(osr.SRS_PP_FALSE_EASTING)
     if abs(fe-2000000.0) > 0.001:
         gdaltest.post_reason( 'did not get expected false easting (2)' )
         return 'fail'
-    
+
     # Test the file with the old (broken) GDAL formulation.
-    
+
     ds = gdal.Open('data/spaf27_brokengdal.tif')
     wkt = ds.GetProjectionRef()
     ds = None
 
     srs = osr.SpatialReference( wkt )
-    
+
     fe = srs.GetProjParm(osr.SRS_PP_FALSE_EASTING)
     if abs(fe-2000000.0) > 0.001:
         gdaltest.post_reason( 'did not get expected false easting (3)' )
         return 'fail'
-    
+
     gdal.SetConfigOption( 'GTIFF_LINEAR_UNITS', 'DEFAULT' )
-    
+
     return 'success'
 
 ###############################################################################
@@ -487,11 +530,11 @@ def tiff_g4_split():
 
     if not 'GetBlockSize' in dir(gdal.Band):
         return 'skip'
-    
+
     ds = gdal.Open('data/slim_g4.tif')
 
     (blockx, blocky) = ds.GetRasterBand(1).GetBlockSize()
-    
+
     if blocky != 1:
         gdaltest.post_reason( 'Did not get scanline sized blocks.' )
         return 'fail'
@@ -501,7 +544,7 @@ def tiff_g4_split():
         print(cs)
         gdaltest.post_reason( 'Got wrong checksum' )
         return 'fail'
-    
+
     return 'success'
 
 ###############################################################################
@@ -509,10 +552,11 @@ def tiff_g4_split():
 
 def tiff_multi_images():
 
-    # Implicitely get the content of the first image (backward compatibility)
+    # Implicitly get the content of the first image (backward compatibility).
     ds = gdal.Open('data/twoimages.tif')
     if ds.GetRasterBand(1).Checksum() != 4672:
-            print('Expected checksum = %d. Got = %d' % (4672, ds.GetRasterBand(1).Checksum()))
+            print('Expected checksum = %d. Got = %d' %
+                  (4672, ds.GetRasterBand(1).Checksum()))
             return 'fail'
 
     md = ds.GetMetadata('SUBDATASETS')
@@ -520,17 +564,17 @@ def tiff_multi_images():
         print(md)
         gdaltest.post_reason( 'did not get expected subdatasets metadata.' )
         return 'fail'
-    
+
     ds = None
 
-    # Explicitely get the content of the first image
+    # Explicitly get the content of the first image.
     ds = gdal.Open('GTIFF_DIR:1:data/twoimages.tif')
     if ds.GetRasterBand(1).Checksum() != 4672:
             print('Expected checksum = %d. Got = %d' % (4672, ds.GetRasterBand(1).Checksum()))
             return 'fail'
     ds = None
 
-    # Explicitely get the content of the second image
+    # Explicitly get the content of the second image.
     ds = gdal.Open('GTIFF_DIR:2:data/twoimages.tif')
     if ds.GetRasterBand(1).Checksum() != 4672:
             print('Expected checksum = %d. Got = %d' % (4672, ds.GetRasterBand(1).Checksum()))
@@ -666,7 +710,7 @@ def tiff_12bitjpeg():
         stats = ds.GetRasterBand(1).GetStatistics( 0, 1 )
     except:
         pass
-    
+
     if stats[2] < 2150 or stats[2] > 2180 or str(stats[2]) == 'nan':
         gdaltest.post_reason( 'did not get expected mean for band1.')
         print(stats)
@@ -725,10 +769,10 @@ def tiff_read_stats_from_pam():
 # Test extracting georeferencing from a .TAB file
 
 def tiff_read_from_tab():
-    
+
     ds = gdal.GetDriverByName('GTiff').Create('tmp/tiff_read_from_tab.tif', 1, 1)
     ds = None
-    
+
     f = open('tmp/tiff_read_from_tab.tab', 'wt')
     f.write("""!table
 !version 300
@@ -802,7 +846,7 @@ def tiff_read_pixelispoint():
         print(gt)
         gdaltest.post_reason( 'did not get expected geotransform with GTIFF_POINT_GEO_IGNORE TRUE' )
         return 'fail'
-    
+
     gdal.SetConfigOption( 'GTIFF_POINT_GEO_IGNORE', 'FALSE' )
 
     return 'success'
@@ -837,7 +881,7 @@ def tiff_read_geomatrix():
         print(gt)
         gdaltest.post_reason( 'did not get expected geotransform with GTIFF_POINT_GEO_IGNORE TRUE' )
         return 'fail'
-    
+
     gdal.SetConfigOption( 'GTIFF_POINT_GEO_IGNORE', 'FALSE' )
 
     return 'success'
@@ -866,7 +910,11 @@ def tiff_read_corrupted_gtiff():
 
 def tiff_read_tag_without_null_byte():
 
+    gdal.ErrorReset()
+    oldval = gdal.GetConfigOption('CPL_DEBUG')
+    gdal.SetConfigOption('CPL_DEBUG', 'OFF')
     ds = gdal.Open('data/tag_without_null_byte.tif')
+    gdal.SetConfigOption('CPL_DEBUG', oldval)
     if gdal.GetLastErrorType() != 0:
         gdaltest.post_reason( 'should have not emitted a warning, but only a CPLDebug() message' )
         return 'fail'
@@ -942,7 +990,7 @@ def tiff_read_rpc_tif():
     ds = None
 
     if rpc_md['HEIGHT_OFF'] != '300':
-        gdaltest.post_reason('HEIGHT_OFF wrong:'+rpc_md['HEIGHT_OFF'])        
+        gdaltest.post_reason('HEIGHT_OFF wrong:'+rpc_md['HEIGHT_OFF'])
         return 'fail'
 
     if rpc_md['LINE_DEN_COEFF'].find('1 -0.00520769693945429') != 0:
@@ -1079,7 +1127,7 @@ def tiff_jpeg_rgba_band_interleaved():
     ds = None
 
     return 'success'
-    
+
 ###############################################################################
 # Test reading a YCbCr JPEG all-in-one-strip multiband TIFF (#3259, #3894)
 
@@ -1090,15 +1138,15 @@ def tiff_read_online_1():
 
     if not gdaltest.download_file('http://trac.osgeo.org/gdal/raw-attachment/ticket/3259/imgpb17.tif', 'imgpb17.tif'):
         return 'skip'
-        
+
     ds = gdal.Open('tmp/cache/imgpb17.tif')
     gdal.ErrorReset()
     cs = ds.GetRasterBand(1).Checksum()
     ds = None
-    
+
     if gdal.GetLastErrorMsg() != '':
         return 'fail'
-    
+
     if cs != 62628 and cs != 28554:
         print(cs)
         return 'fail'
@@ -1266,12 +1314,12 @@ def tiff_read_irregular_tile_size_jpeg_in_tiff():
     return 'success'
 
 ###############################################################################
-# Test GTIFF_DIRECT_IO optimization
+# Test GTIFF_DIRECT_IO and GTIFF_VIRTUAL_MEM_IO optimizations
 
 def tiff_direct_and_virtual_mem_io():
 
   # Test with pixel-interleaved and band-interleaved datasets
-  for dt in [ gdal.GDT_Byte, gdal.GDT_Int16 ]:
+  for dt in [ gdal.GDT_Byte, gdal.GDT_Int16, gdal.GDT_CInt16 ]:
 
     src_ds = gdal.Open('data/stefan_full_rgba.tif')
     dt_size = 1
@@ -1293,24 +1341,51 @@ def tiff_direct_and_virtual_mem_io():
             data = ''.join(new_vals)
         mem_ds.WriteRaster(0, 0, src_ds.RasterXSize, src_ds.RasterYSize, data, buf_type = dt)
         src_ds = mem_ds
+    elif dt == gdal.GDT_CInt16:
+        dt_size = 4
+        mem_ds = gdal.GetDriverByName('MEM').Create('', src_ds.RasterXSize, src_ds.RasterYSize, src_ds.RasterCount, dt)
+        data = src_ds.ReadRaster(0, 0, src_ds.RasterXSize, src_ds.RasterYSize, buf_type = dt)
+        new_vals = []
+        for i in range(4*src_ds.RasterXSize*src_ds.RasterYSize):
+            if sys.version_info >= (3,0,0):
+                new_vals.append(chr(data[4*i]).encode('latin1'))
+                new_vals.append(chr(data[4*i]).encode('latin1'))
+                new_vals.append(chr(255 - data[4*i]).encode('latin1'))
+                new_vals.append(chr(255 - data[4*i]).encode('latin1'))
+            else:
+                new_vals.append(data[4*i])
+                new_vals.append(data[4*i])
+                new_vals.append(chr(255 - ord(data[4*i])))
+                new_vals.append(chr(255 - ord(data[4*i])))
+        if sys.version_info >= (3,0,0):
+            data = ''.encode('latin1').join(new_vals)
+        else:
+            data = ''.join(new_vals)
+        mem_ds.WriteRaster(0, 0, src_ds.RasterXSize, src_ds.RasterYSize, data, buf_type = dt)
+        src_ds = mem_ds
 
     for truncated in [False, True]:
      if truncated:
          nitermax = 4
-         options = [('GTIFF_VIRTUAL_MEM_IO', '/vsimem')]
+         options = [('GTIFF_DIRECT_IO', '/vsimem'), ('GTIFF_VIRTUAL_MEM_IO', '/vsimem')]
      else:
          nitermax = 8
-         options = [('GTIFF_DIRECT_IO', '/vsimem'), ('GTIFF_VIRTUAL_MEM_IO', 'tmp'), ('GTIFF_VIRTUAL_MEM_IO', '/vsimem')]
+         options = [('GTIFF_DIRECT_IO', '/vsimem'), ('GTIFF_VIRTUAL_MEM_IO', '/vsimem'), ('GTIFF_VIRTUAL_MEM_IO', 'tmp')]
      for (option, prefix) in options:
-      if option == 'GTIFF_DIRECT_IO':
-          niter = 2
+      if dt == gdal.GDT_CInt16:
+          niter = 3
+      elif prefix == 'tmp':
+          niter = 4
       else:
           niter = nitermax
       for i in range(niter):
 
         if i == 0:
             filename = '%s/tiff_direct_io_contig.tif' % prefix
-            out_ds = gdal.GetDriverByName('GTiff').CreateCopy(filename, src_ds)
+            creation_options = []
+            if (dt == gdal.GDT_CInt16 or dt == gdal.GDT_Int16):
+                creation_options += [ 'ENDIANNESS=INVERTED' ]
+            out_ds = gdal.GetDriverByName('GTiff').CreateCopy(filename, src_ds, options = creation_options)
             out_ds.FlushCache()
             out_ds = None
         elif i == 1:
@@ -1320,9 +1395,15 @@ def tiff_direct_and_virtual_mem_io():
             out_ds = None
         elif i == 2:
             filename = '%s/tiff_direct_io_tiled_contig.tif' % prefix
-            out_ds = gdal.GetDriverByName('GTiff').CreateCopy(filename, src_ds, options = ['TILED=YES', 'BLOCKXSIZE=32', 'BLOCKYSIZE=16'])
-            out_ds.FlushCache()
-            out_ds = None
+            creation_options = ['TILED=YES', 'BLOCKXSIZE=32', 'BLOCKYSIZE=16']
+            if (dt == gdal.GDT_CInt16 or dt == gdal.GDT_Int16):
+                creation_options += [ 'ENDIANNESS=INVERTED' ]
+            if option == 'GTIFF_VIRTUAL_MEM_IO' and prefix == '/vsimem':
+                gdal.Translate(filename, src_ds, bandList = [1, 2, 3], creationOptions= creation_options)
+            else:
+                out_ds = gdal.GetDriverByName('GTiff').CreateCopy(filename, src_ds, options = creation_options)
+                out_ds.FlushCache()
+                out_ds = None
         elif i == 3:
             filename = '%s/tiff_direct_io_tiled_separate.tif' % prefix
             out_ds = gdal.GetDriverByName('GTiff').CreateCopy(filename, src_ds, options = ['TILED=YES', 'BLOCKXSIZE=32', 'BLOCKYSIZE=16', 'INTERLEAVE=BAND'])
@@ -1350,11 +1431,34 @@ def tiff_direct_and_virtual_mem_io():
             out_ds = None
 
         if truncated:
+            ds = gdal.Open(filename)
+            nbands = ds.RasterCount
+            nxsize = ds.RasterXSize
+            nysize = ds.RasterYSize
+            (nblockxsize, nblockysize) = ds.GetRasterBand(1).GetBlockSize()
+            band_interleaved = ds.GetMetadataItem('INTERLEAVE', 'IMAGE_STRUCTURE') == 'BAND'
+            ds = None
+
+            padding = 0
+            if nblockxsize < nxsize:
+                if (nysize % nblockysize) != 0:
+                    padding = ((nxsize + nblockxsize - 1) / nblockxsize * nblockxsize) * (nblockysize - (nysize % nblockysize))
+                if( nxsize % nblockxsize) != 0:
+                    padding += nblockxsize - (nxsize % nblockxsize)
+                padding *= dt_size
+                if not band_interleaved:
+                    padding *= nbands
+                padding = int(padding)
+
+            to_remove = 1
+            if not band_interleaved:
+                to_remove += (nbands-1) * dt_size
+
             f = gdal.VSIFOpenL(filename, 'rb')
             data = gdal.VSIFReadL(1, 1000000, f)
             gdal.VSIFCloseL(f)
             f = gdal.VSIFOpenL(filename, 'wb')
-            gdal.VSIFWriteL(data, 1, len(data)-1, f)
+            gdal.VSIFWriteL(data, 1, len(data)-padding-to_remove, f)
             gdal.VSIFCloseL(f)
 
         ds = gdal.Open(filename)
@@ -1362,6 +1466,8 @@ def tiff_direct_and_virtual_mem_io():
         yoff = int(ds.RasterYSize/4)
         xsize = int(ds.RasterXSize/2)
         ysize = int(ds.RasterXSize/2)
+        nbands = ds.RasterCount
+        sizeof_float = 4
 
         if truncated:
             gdal.PushErrorHandler()
@@ -1369,21 +1475,25 @@ def tiff_direct_and_virtual_mem_io():
         ref_data_native_type_whole = ds.GetRasterBand(1).ReadRaster()
         ref_data_native_type_downsampled = ds.GetRasterBand(1).ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = int(xsize/2), buf_ysize = int(ysize/2))
         ref_data_native_type_downsampled_not_nearest = ds.GetRasterBand(1).ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = int(xsize/2), buf_ysize = int(ysize/2), resample_alg = gdal.GRIORA_Bilinear)
-        ref_data_native_type_upsampled = ds.GetRasterBand(1).ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = 4 * xsize, buf_ysize = 4 * ysize)
-        ref_data_native_type_custom_spacings = ds.GetRasterBand(1).ReadRaster(xoff, yoff, xsize, ysize, buf_pixel_space = 4 * dt_size)
+        ref_data_native_type_upsampled = ds.GetRasterBand(1).ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = nbands * xsize, buf_ysize = nbands * ysize)
+        ref_data_native_type_custom_spacings = ds.GetRasterBand(1).ReadRaster(xoff, yoff, xsize, ysize, buf_pixel_space = nbands * dt_size)
         ref_data_float32 = ds.GetRasterBand(1).ReadRaster(xoff, yoff, xsize, ysize, buf_type = gdal.GDT_Float32)
-        ref_4bands_data_native_type = ds.ReadRaster(xoff, yoff, xsize, ysize)
-        ref_4bands_data_native_type_whole = ds.ReadRaster()
-        ref_4bands_data_native_type_downsampled = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = int(xsize/2), buf_ysize = int(ysize/2))
-        ref_4bands_data_native_type_downsampled_interleaved = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = int(xsize/2), buf_ysize = int(ysize/2), buf_pixel_space = 4 * dt_size, buf_band_space = dt_size)
-        ref_4bands_data_native_type_downsampled_not_nearest = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = int(xsize/2), buf_ysize = int(ysize/2), resample_alg = gdal.GRIORA_Bilinear)
-        ref_4bands_data_native_type_upsampled = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = 4 * xsize, buf_ysize = 4 * ysize)
-        ref_4bands_data_native_type_unordered_list = ds.ReadRaster(xoff, yoff, xsize, ysize, band_list = [4,3,2,1])
-        ref_4bands_data_native_type_pixel_interleaved = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_pixel_space = 4 * dt_size, buf_band_space = dt_size)
-        ref_4bands_data_native_type_pixel_interleaved_whole = ds.ReadRaster(buf_pixel_space = 4 * dt_size, buf_band_space = dt_size)
-        ref_3bands_data_native_type_pixel_interleaved_with_extra_space = ds.ReadRaster(xoff, yoff, xsize, ysize, band_list = [1, 2, 3], buf_pixel_space = 4 * dt_size, buf_band_space = dt_size)
-        ref_4bands_data_float32 = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_type = gdal.GDT_Float32)
-        ref_4bands_data_float32_pixel_interleaved = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_type = gdal.GDT_Float32, buf_pixel_space = 4*4, buf_band_space = 1*4)
+        ref_nbands_data_native_type = ds.ReadRaster(xoff, yoff, xsize, ysize)
+        ref_nbands_data_native_type_whole = ds.ReadRaster()
+        ref_nbands_data_native_type_downsampled = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = int(xsize/2), buf_ysize = int(ysize/2))
+        ref_nbands_data_native_type_downsampled_interleaved = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = int(xsize/2), buf_ysize = int(ysize/2), buf_pixel_space = nbands * dt_size, buf_band_space = dt_size)
+        ref_nbands_data_native_type_downsampled_not_nearest = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = int(xsize/2), buf_ysize = int(ysize/2), resample_alg = gdal.GRIORA_Bilinear)
+        ref_nbands_data_native_type_upsampled = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = 4 * xsize, buf_ysize = 4 * ysize)
+        ref_nbands_data_native_type_downsampled_x_upsampled_y = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = int(xsize/2), buf_ysize = 32 * ysize)
+        ref_nbands_data_native_type_unordered_list = ds.ReadRaster(xoff, yoff, xsize, ysize, band_list = [ nbands-i for i in range(nbands) ])
+        ref_nbands_data_native_type_pixel_interleaved = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_pixel_space = nbands * dt_size, buf_band_space = dt_size)
+        ref_nbands_data_native_type_pixel_interleaved_whole = ds.ReadRaster(buf_pixel_space = nbands * dt_size, buf_band_space = dt_size)
+        ref_nbands_m_1_data_native_type_pixel_interleaved_with_extra_space = ds.ReadRaster(xoff, yoff, xsize, ysize, band_list = [i+1 for i in range(nbands-1)], buf_pixel_space = nbands * dt_size, buf_band_space = dt_size)
+        ref_nbands_data_float32 = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_type = gdal.GDT_Float32)
+        ref_nbands_data_float32_pixel_interleaved = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_type = gdal.GDT_Float32, buf_pixel_space = nbands*sizeof_float, buf_band_space = 1*sizeof_float)
+        ref_nbands_data_native_type_custom_spacings = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_pixel_space = 2 * nbands * dt_size, buf_band_space = dt_size)
+        if nbands == 3:
+            ref_nbands_data_native_type_custom_spacings_2 = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_pixel_space = 4 * dt_size, buf_band_space = dt_size)
         if truncated:
             gdal.PopErrorHandler()
         ds = None
@@ -1398,22 +1508,26 @@ def tiff_direct_and_virtual_mem_io():
         got_data_native_type_whole = ds.GetRasterBand(1).ReadRaster()
         got_data_native_type_downsampled = ds.GetRasterBand(1).ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = int(xsize/2), buf_ysize = int(ysize/2))
         got_data_native_type_downsampled_not_nearest = ds.GetRasterBand(1).ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = int(xsize/2), buf_ysize = int(ysize/2), resample_alg = gdal.GRIORA_Bilinear)
-        got_data_native_type_upsampled = ds.GetRasterBand(1).ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = 4 * xsize, buf_ysize = 4 * ysize)
-        got_data_native_type_custom_spacings = ds.GetRasterBand(1).ReadRaster(xoff, yoff, xsize, ysize, buf_pixel_space = 4 * dt_size)
+        got_data_native_type_upsampled = ds.GetRasterBand(1).ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = nbands * xsize, buf_ysize = nbands * ysize)
+        got_data_native_type_custom_spacings = ds.GetRasterBand(1).ReadRaster(xoff, yoff, xsize, ysize, buf_pixel_space = nbands * dt_size)
         got_data_float32 = ds.GetRasterBand(1).ReadRaster(xoff, yoff, xsize, ysize, buf_type = gdal.GDT_Float32)
-        got_4bands_data_native_type = ds.ReadRaster(xoff, yoff, xsize, ysize)
-        got_4bands_data_native_type_whole = ds.ReadRaster()
-        got_4bands_data_native_type_bottom_right_downsampled = ds.ReadRaster(ds.RasterXSize-2, ds.RasterYSize - 1, 2, 1, buf_xsize = 1, buf_ysize = 1, buf_pixel_space = 4 * dt_size, buf_band_space = dt_size)
-        got_4bands_data_native_type_downsampled = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = int(xsize/2), buf_ysize = int(ysize/2))
-        got_4bands_data_native_type_downsampled_interleaved = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = int(xsize/2), buf_ysize = int(ysize/2), buf_pixel_space = 4 * dt_size, buf_band_space = dt_size)
-        got_4bands_data_native_type_downsampled_not_nearest = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = int(xsize/2), buf_ysize = int(ysize/2), resample_alg = gdal.GRIORA_Bilinear)
-        got_4bands_data_native_type_upsampled = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = 4 * xsize, buf_ysize = 4 * ysize)
-        got_4bands_data_native_type_unordered_list = ds.ReadRaster(xoff, yoff, xsize, ysize, band_list = [4,3,2,1])
-        got_4bands_data_native_type_pixel_interleaved = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_pixel_space = 4 * dt_size, buf_band_space = dt_size)
-        got_4bands_data_native_type_pixel_interleaved_whole = ds.ReadRaster(buf_pixel_space = 4 * dt_size, buf_band_space = dt_size)
-        got_3bands_data_native_type_pixel_interleaved_with_extra_space = ds.ReadRaster(xoff, yoff, xsize, ysize, band_list = [1, 2, 3], buf_pixel_space = 4 * dt_size, buf_band_space = dt_size)
-        got_4bands_data_float32 = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_type = gdal.GDT_Float32)
-        got_4bands_data_float32_pixel_interleaved = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_type = gdal.GDT_Float32, buf_pixel_space = 4*4, buf_band_space = 1*4)
+        got_nbands_data_native_type = ds.ReadRaster(xoff, yoff, xsize, ysize)
+        got_nbands_data_native_type_whole = ds.ReadRaster()
+        got_nbands_data_native_type_bottom_right_downsampled = ds.ReadRaster(ds.RasterXSize-2, ds.RasterYSize - 1, 2, 1, buf_xsize = 1, buf_ysize = 1, buf_pixel_space = nbands * dt_size, buf_band_space = dt_size)
+        got_nbands_data_native_type_downsampled = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = int(xsize/2), buf_ysize = int(ysize/2))
+        got_nbands_data_native_type_downsampled_interleaved = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = int(xsize/2), buf_ysize = int(ysize/2), buf_pixel_space = nbands * dt_size, buf_band_space = dt_size)
+        got_nbands_data_native_type_downsampled_not_nearest = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = int(xsize/2), buf_ysize = int(ysize/2), resample_alg = gdal.GRIORA_Bilinear)
+        got_nbands_data_native_type_upsampled = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = 4 * xsize, buf_ysize = 4 * ysize)
+        got_nbands_data_native_type_downsampled_x_upsampled_y = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_xsize = int(xsize/2), buf_ysize = 32 * ysize)
+        got_nbands_data_native_type_unordered_list = ds.ReadRaster(xoff, yoff, xsize, ysize, band_list = [ nbands-i for i in range(nbands) ])
+        got_nbands_data_native_type_pixel_interleaved = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_pixel_space = nbands * dt_size, buf_band_space = dt_size)
+        got_nbands_data_native_type_pixel_interleaved_whole = ds.ReadRaster(buf_pixel_space = nbands * dt_size, buf_band_space = dt_size)
+        got_nbands_m_1_data_native_type_pixel_interleaved_with_extra_space = ds.ReadRaster(xoff, yoff, xsize, ysize, band_list = [i+1 for i in range(nbands-1)], buf_pixel_space = nbands * dt_size, buf_band_space = dt_size)
+        got_nbands_data_float32 = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_type = gdal.GDT_Float32)
+        got_nbands_data_float32_pixel_interleaved = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_type = gdal.GDT_Float32, buf_pixel_space = nbands*sizeof_float, buf_band_space = 1*sizeof_float)
+        got_nbands_data_native_type_custom_spacings = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_pixel_space = 2 * nbands * dt_size, buf_band_space = dt_size)
+        if nbands == 3:
+            got_nbands_data_native_type_custom_spacings_2 = ds.ReadRaster(xoff, yoff, xsize, ysize, buf_pixel_space = 4 * dt_size, buf_band_space = dt_size)
         ds = None
         gdal.SetConfigOption(option, old_val)
         if truncated:
@@ -1434,6 +1548,7 @@ def tiff_direct_and_virtual_mem_io():
                 print(band_interleaved)
                 print(option)
                 print(i)
+                print(gdal.GetDataTypeName(dt))
                 return 'fail'
         elif ref_data_native_type_whole != got_data_native_type_whole:
             gdaltest.post_reason('fail')
@@ -1464,19 +1579,39 @@ def tiff_direct_and_virtual_mem_io():
         for y in range(ysize):
             for x in range(xsize):
               for k in range(dt_size):
-                if ref_data_native_type_custom_spacings[(y*xsize+x)*4*dt_size+k] != got_data_native_type_custom_spacings[(y*xsize+x)*4*dt_size+k]:
+                if ref_data_native_type_custom_spacings[(y*xsize+x)*nbands*dt_size+k] != got_data_native_type_custom_spacings[(y*xsize+x)*nbands*dt_size+k]:
                     gdaltest.post_reason('fail')
+                    print(gdal.GetDataTypeName(dt))
                     print(option)
                     print(i)
                     return 'fail'
+                if not truncated:
+                    for band in range(nbands):
+                        if ref_nbands_data_native_type_custom_spacings[(y*xsize+x)*2*nbands*dt_size+band*dt_size+k] != got_nbands_data_native_type_custom_spacings[(y*xsize+x)*2*nbands*dt_size+band*dt_size+k]:
+                            gdaltest.post_reason('fail')
+                            print(gdal.GetDataTypeName(dt))
+                            print(option)
+                            print(i)
+                            print(x,y,k,band)
+                            return 'fail'
+                    if nbands == 3:
+                        for band in range(nbands):
+                            if ref_nbands_data_native_type_custom_spacings_2[(y*xsize+x)*4*dt_size+band*dt_size+k] != got_nbands_data_native_type_custom_spacings_2[(y*xsize+x)*4*dt_size+band*dt_size+k]:
+                                gdaltest.post_reason('fail')
+                                print(gdal.GetDataTypeName(dt))
+                                print(option)
+                                print(i)
+                                print(x,y,k,band)
+                                return 'fail'
 
         if ref_data_float32 != got_data_float32:
             gdaltest.post_reason('fail')
+            print(gdal.GetDataTypeName(dt))
             print(option)
             print(i)
             return 'fail'
 
-        if not truncated and ref_4bands_data_native_type != got_4bands_data_native_type:
+        if not truncated and ref_nbands_data_native_type != got_nbands_data_native_type:
             gdaltest.post_reason('fail')
             print(truncated)
             print(band_interleaved)
@@ -1485,31 +1620,34 @@ def tiff_direct_and_virtual_mem_io():
             return 'fail'
 
         if truncated:
-            if got_4bands_data_native_type_whole is not None:
+            if got_nbands_data_native_type_whole is not None:
                 gdaltest.post_reason('fail')
+                print(gdal.GetDataTypeName(dt))
                 print(option)
                 print(i)
                 return 'fail'
-        elif ref_4bands_data_native_type_whole != got_4bands_data_native_type_whole:
+        elif ref_nbands_data_native_type_whole != got_nbands_data_native_type_whole:
             gdaltest.post_reason('fail')
+            print(gdal.GetDataTypeName(dt))
             print(option)
             print(i)
             return 'fail'
 
         if truncated:
-            if got_4bands_data_native_type_pixel_interleaved_whole is not None:
+            if got_nbands_data_native_type_pixel_interleaved_whole is not None:
                 gdaltest.post_reason('fail')
                 print(option)
                 print(i)
                 return 'fail'
-        elif ref_4bands_data_native_type_pixel_interleaved_whole != got_4bands_data_native_type_pixel_interleaved_whole:
+        elif ref_nbands_data_native_type_pixel_interleaved_whole != got_nbands_data_native_type_pixel_interleaved_whole:
             gdaltest.post_reason('fail')
             print(option)
             print(i)
             return 'fail'
 
-        if truncated and got_4bands_data_native_type_bottom_right_downsampled is not None:
+        if truncated and got_nbands_data_native_type_bottom_right_downsampled is not None:
             gdaltest.post_reason('fail')
+            print(gdal.GetDataTypeName(dt))
             print(option)
             print(i)
             return 'fail'
@@ -1517,37 +1655,57 @@ def tiff_direct_and_virtual_mem_io():
         if truncated:
             continue
 
-        if ref_4bands_data_native_type_downsampled != got_4bands_data_native_type_downsampled:
+        if ref_nbands_data_native_type_downsampled != got_nbands_data_native_type_downsampled:
             gdaltest.post_reason('fail')
             print(option)
             print(i)
             return 'fail'
 
-        if ref_4bands_data_native_type_downsampled_interleaved != got_4bands_data_native_type_downsampled_interleaved:
+        if ref_nbands_data_native_type_downsampled_interleaved != got_nbands_data_native_type_downsampled_interleaved:
             gdaltest.post_reason('fail')
             print(option)
             print(i)
             return 'fail'
 
-        if ref_4bands_data_native_type_downsampled_not_nearest != got_4bands_data_native_type_downsampled_not_nearest:
+        if ref_nbands_data_native_type_downsampled_not_nearest != got_nbands_data_native_type_downsampled_not_nearest:
             gdaltest.post_reason('fail')
             print(option)
             print(i)
             return 'fail'
 
-        if ref_4bands_data_native_type_upsampled != got_4bands_data_native_type_upsampled:
+        if ref_nbands_data_native_type_upsampled != got_nbands_data_native_type_upsampled:
+            gdaltest.post_reason('fail')
+            print(option)
+            print(i)
+            #import struct
+            #f1 = open('out1.txt', 'wb')
+            #f2 = open('out2.txt', 'wb')
+            #for b in range(nbands):
+            #    for y in range(4 * ysize):
+            #        f1.write('%s\n' % str(struct.unpack('B' * 4 * xsize, ref_nbands_data_native_type_upsampled[(b * 4 * ysize + y) * 4 * xsize : (b * 4 * ysize + y + 1) * 4 * xsize])))
+            #        f2.write('%s\n' % str(struct.unpack('B' * 4 * xsize, got_nbands_data_native_type_upsampled[(b * 4 * ysize + y) * 4 * xsize : (b * 4 * ysize + y + 1) * 4 * xsize])))
+            return 'fail'
+
+        if ref_nbands_data_native_type_downsampled_x_upsampled_y != got_nbands_data_native_type_downsampled_x_upsampled_y:
+            gdaltest.post_reason('fail')
+            print(option)
+            print(i)
+            #import struct
+            #f1 = open('out1.txt', 'wb')
+            #f2 = open('out2.txt', 'wb')
+            #for b in range(nbands):
+            #    for y in range(32 * ysize):
+            #        f1.write('%s\n' % str(struct.unpack('B' * int(xsize/2), ref_nbands_data_native_type_downsampled_x_upsampled_y[(b * 32 * ysize + y) * int(xsize/2) : (b * 32 * ysize + y + 1) * int(xsize/2)])))
+            #        f2.write('%s\n' % str(struct.unpack('B' * int(xsize/2), got_nbands_data_native_type_downsampled_x_upsampled_y[(b * 32 * ysize + y) * int(xsize/2) : (b * 32 * ysize + y + 1) * int(xsize/2)])))
+            return 'fail'
+
+        if ref_nbands_data_native_type_unordered_list != got_nbands_data_native_type_unordered_list:
             gdaltest.post_reason('fail')
             print(option)
             print(i)
             return 'fail'
 
-        if ref_4bands_data_native_type_unordered_list != got_4bands_data_native_type_unordered_list:
-            gdaltest.post_reason('fail')
-            print(option)
-            print(i)
-            return 'fail'
-
-        if ref_4bands_data_native_type_pixel_interleaved != got_4bands_data_native_type_pixel_interleaved:
+        if ref_nbands_data_native_type_pixel_interleaved != got_nbands_data_native_type_pixel_interleaved:
             gdaltest.post_reason('fail')
             print(option)
             print(i)
@@ -1555,9 +1713,9 @@ def tiff_direct_and_virtual_mem_io():
 
         for y in range(ysize):
             for x in range(xsize):
-                for b in range(3):
+                for b in range(nbands-1):
                   for k in range(dt_size):
-                    if ref_3bands_data_native_type_pixel_interleaved_with_extra_space[((y*xsize+x)*4+b)*dt_size+k] != got_3bands_data_native_type_pixel_interleaved_with_extra_space[((y*xsize+x)*4+b)*dt_size+k]:
+                    if ref_nbands_m_1_data_native_type_pixel_interleaved_with_extra_space[((y*xsize+x)*nbands+b)*dt_size+k] != got_nbands_m_1_data_native_type_pixel_interleaved_with_extra_space[((y*xsize+x)*nbands+b)*dt_size+k]:
                         gdaltest.post_reason('fail')
                         print(option)
                         print(i)
@@ -1566,13 +1724,13 @@ def tiff_direct_and_virtual_mem_io():
                         print(b)
                         return 'fail'
 
-        if ref_4bands_data_float32 != got_4bands_data_float32:
+        if ref_nbands_data_float32 != got_nbands_data_float32:
             gdaltest.post_reason('fail')
             print(option)
             print(i)
             return 'fail'
 
-        if ref_4bands_data_float32_pixel_interleaved != got_4bands_data_float32_pixel_interleaved:
+        if ref_nbands_data_float32_pixel_interleaved != got_nbands_data_float32_pixel_interleaved:
             gdaltest.post_reason('fail')
             print(option)
             print(i)
@@ -2137,7 +2295,148 @@ def tiff_read_empty_nodata_tag():
 
     return 'success'
 
-###############################################################################################
+###############################################################################
+# Check that no auxiliary files are read with a simple Open(), reading
+# imagery and getting IMAGE_STRUCTURE metadata
+
+def tiff_read_strace_check():
+
+    if not sys.platform.startswith('linux'):
+        return 'skip'
+
+    python_exe = sys.executable
+    cmd = "strace -f %s -c \"from osgeo import gdal; " % python_exe + (
+        "gdal.SetConfigOption('CPL_DEBUG', 'OFF');"
+        "ds = gdal.Open('../gcore/data/byte.tif');"
+        "ds.ReadRaster();"
+        "ds.GetMetadata('IMAGE_STRUCTURE');"
+        "ds.GetRasterBand(1).GetMetadata('IMAGE_STRUCTURE');"
+        " \" " )
+    try:
+        (out, err) = gdaltest.runexternal_out_and_err(cmd)
+    except:
+        # strace not available
+        return 'skip'
+
+    lines_with_dotdot_gcore = []
+    for line in err.split('\n'):
+        if line.find('../gcore') >= 0:
+            lines_with_dotdot_gcore += [ line ]
+
+    if len(lines_with_dotdot_gcore) != 1:
+        gdaltest.post_reason('fail')
+        print(lines_with_dotdot_gcore)
+        return 'fail'
+
+    return 'success'
+
+###############################################################################
+# Test GDAL_READDIR_LIMIT_ON_OPEN
+
+def tiff_read_readdir_limit_on_open():
+
+    gdal.SetConfigOption('GDAL_READDIR_LIMIT_ON_OPEN', '1')
+
+    ds = gdal.Open( 'data/md_kompsat.tif', gdal.GA_ReadOnly )
+    filelist = ds.GetFileList()
+
+    gdal.SetConfigOption('GDAL_READDIR_LIMIT_ON_OPEN', None)
+
+    if len(filelist) != 3:
+        gdaltest.post_reason( 'did not get expected file list.' )
+        return 'fail'
+
+    return 'success'
+
+###############################################################################
+#
+def tiff_read_minisblack_as_rgba():
+
+    if not gdaltest.supports_force_rgba:
+        return 'skip'
+
+    gdal.SetConfigOption('GTIFF_FORCE_RGBA', 'YES')
+    ds = gdal.Open('data/byte.tif')
+    gdal.SetConfigOption('GTIFF_FORCE_RGBA', None)
+    got_cs = [ ds.GetRasterBand(i+1).Checksum() for i in range(ds.RasterCount) ]
+    if got_cs != [4672,4672,4672,4873]:
+        gdaltest.post_reason( 'fail')
+        print(got_cs)
+        return 'fail'
+    ds = None
+
+    return 'success'
+
+###############################################################################
+#
+def tiff_read_colortable_as_rgba():
+
+    if not gdaltest.supports_force_rgba:
+        return 'skip'
+
+    gdal.SetConfigOption('GTIFF_FORCE_RGBA', 'YES')
+    ds = gdal.Open('data/test_average_palette.tif')
+    gdal.SetConfigOption('GTIFF_FORCE_RGBA', None)
+    got_cs = [ ds.GetRasterBand(i+1).Checksum() for i in range(ds.RasterCount) ]
+    if got_cs != [2433,2433,2433,4873]:
+        gdaltest.post_reason( 'fail')
+        print(got_cs)
+        return 'fail'
+    ds = None
+
+    return 'success'
+
+###############################################################################
+#
+def tiff_read_logl_as_rgba():
+
+    if not gdaltest.supports_force_rgba:
+        return 'skip'
+
+    gdal.SetConfigOption('GTIFF_FORCE_RGBA', 'YES')
+    ds = gdal.Open('data/uint16_sgilog.tif')
+    gdal.SetConfigOption('GTIFF_FORCE_RGBA', None)
+    got_cs = [ ds.GetRasterBand(i+1).Checksum() for i in range(ds.RasterCount) ]
+    # I'm pretty sure this isn't the expected result...
+    if got_cs != [0,0,0,4873]:
+        gdaltest.post_reason( 'fail')
+        print(got_cs)
+        return 'fail'
+    ds = None
+
+    return 'success'
+
+###############################################################################
+#
+def tiff_read_scanline_more_than_2GB():
+
+    with gdaltest.error_handler():
+        ds = gdal.Open('data/scanline_more_than_2GB.tif')
+    if ds is not None:
+        return 'fail'
+    return 'success'
+
+###############################################################################
+# Test that we are at least robust to wrong number of ExtraSamples and warn
+# about it
+
+def tiff_read_wrong_number_extrasamples():
+
+    gdal.ErrorReset()
+    with gdaltest.error_handler():
+        ds = gdal.Open('data/6band_wrong_number_extrasamples.tif')
+    if gdal.GetLastErrorMsg().find('Wrong number of ExtraSamples') < 0:
+        gdaltest.post_reason( 'fail')
+        print(gdal.GetLastErrorMsg())
+        return 'fail'
+    if ds.GetRasterBand(6).GetRasterColorInterpretation() != gdal.GCI_AlphaBand:
+        gdaltest.post_reason( 'fail')
+        print(ds.GetRasterBand(6).GetRasterColorInterpretation())
+        return 'fail'
+
+    return 'success'
+
+###############################################################################
 
 for item in init_list:
     ut = gdaltest.GDALTest( 'GTiff', item[0], item[1], item[2] )
@@ -2191,6 +2490,13 @@ gdaltest_list.append( (tiff_read_tiff_metadata) )
 gdaltest_list.append( (tiff_read_irregular_tile_size_jpeg_in_tiff) )
 gdaltest_list.append( (tiff_direct_and_virtual_mem_io) )
 gdaltest_list.append( (tiff_read_empty_nodata_tag) )
+gdaltest_list.append( (tiff_read_strace_check) )
+gdaltest_list.append( (tiff_read_readdir_limit_on_open) )
+gdaltest_list.append( (tiff_read_minisblack_as_rgba) )
+gdaltest_list.append( (tiff_read_colortable_as_rgba) )
+gdaltest_list.append( (tiff_read_logl_as_rgba) )
+gdaltest_list.append( (tiff_read_scanline_more_than_2GB) )
+gdaltest_list.append( (tiff_read_wrong_number_extrasamples) )
 
 gdaltest_list.append( (tiff_read_online_1) )
 gdaltest_list.append( (tiff_read_online_2) )
@@ -2206,7 +2512,7 @@ gdaltest_list.append( (tiff_read_md9) )
 gdaltest_list.append( (tiff_read_md10) )
 gdaltest_list.append( (tiff_read_md11) )
 
-#gdaltest_list = [ tiff_direct_and_virtual_mem_io ]
+#gdaltest_list = [ tiff_read_strace_check ]
 
 if __name__ == '__main__':
 
@@ -2215,4 +2521,3 @@ if __name__ == '__main__':
     gdaltest.run_tests( gdaltest_list )
 
     gdaltest.summarize()
-

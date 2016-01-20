@@ -5,10 +5,10 @@
 # Project:  GDAL/OGR Test Suite
 # Purpose:  Test read/write functionality for XPM driver.
 # Author:   Even Rouault <even dot rouault at mines dash paris dot org>
-# 
+#
 ###############################################################################
 # Copyright (c) 2008, Even Rouault <even dot rouault at mines-paris dot org>
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
 # to deal in the Software without restriction, including without limitation
@@ -18,7 +18,7 @@
 #
 # The above copyright notice and this permission notice shall be included
 # in all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -37,7 +37,7 @@ import gdaltest
 
 
 ###############################################################################
-# 
+#
 class TestXPM:
     def __init__( self, downloadURL, fileName, checksum, download_size ):
         self.downloadURL = downloadURL
@@ -58,6 +58,10 @@ class TestXPM:
         return 'success'
 
 
+def xpm_1():
+
+    tst = gdaltest.GDALTest( 'XPM', 'byte.tif', 1, 4583 )
+    return tst.testCreateCopy( vsimem = 1, check_minmax = False )
 
 gdaltest_list = []
 
@@ -68,6 +72,7 @@ for item in xpm_list:
     ut = TestXPM( item[0], item[1], item[2], item[3] )
     gdaltest_list.append( (ut.test, item[1]) )
 
+gdaltest_list.append( xpm_1 )
 
 if __name__ == '__main__':
 

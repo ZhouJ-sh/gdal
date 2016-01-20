@@ -41,7 +41,7 @@ from osgeo import gdal, ogr
 ###############################################################################
 # Test a fairly simple case, with nodata masking.
 
-def polygonize_1():
+def polygonize_1(is_int_polygonize = True):
 
     src_ds = gdal.Open('data/polygonize_in.grd')
     src_band = src_ds.GetRasterBand(1)
@@ -56,7 +56,10 @@ def polygonize_1():
     mem_layer.CreateField( fd )
 
     # run the algorithm.
-    result = gdal.Polygonize( src_band, src_band.GetMaskBand(), mem_layer, 0 )
+    if is_int_polygonize:
+        result = gdal.Polygonize( src_band, src_band.GetMaskBand(), mem_layer, 0 )
+    else:
+        result = gdal.FPolygonize( src_band, src_band.GetMaskBand(), mem_layer, 0 )
     if result != 0:
         gdaltest.post_reason( 'Polygonize failed' )
         return 'fail'
@@ -70,7 +73,7 @@ def polygonize_1():
 
     expect = [ 107, 123, 115, 115, 140, 148, 123, 140, 156,
                100, 101, 102, 103]
-    
+
     tr = ogrtest.check_features_against_list( mem_layer, 'DN', expect )
 
     # check at least one geometry.
@@ -80,11 +83,14 @@ def polygonize_1():
         if ogrtest.check_feature_geometry( feat_read, 'POLYGON ((440720 3751200,440720 3751020,440900 3751020,440900 3751200,440720 3751200),(440780 3751140,440840 3751140,440840 3751080,440780 3751080,440780 3751140))' ) != 0:
             tr = 0
         feat_read.Destroy()
-        
+
     if tr:
         return 'success'
     else:
         return 'fail'
+
+def polygonize_1_float():
+    return polygonize_1(is_int_polygonize = False)
 
 ###############################################################################
 # Test a simple case without masking.
@@ -118,7 +124,7 @@ def polygonize_2():
 
     expect = [ 107, 123, 115, 132, 115, 132, 140, 132, 148, 123, 140,
                132, 156, 100, 101, 102, 103 ]
-    
+
     tr = ogrtest.check_features_against_list( mem_layer, 'DN', expect )
 
     if tr:
@@ -165,7 +171,6 @@ def polygonize_3():
     else:
         tr = 1
     feat_read.Destroy()
-        
 
     if tr:
         return 'success'
@@ -204,7 +209,7 @@ def polygonize_4():
 
     expect = [ 107, 123, 132, 115, 132, 115, 140, 148, 
                123, 140, 132, 156, 100, 101, 102, 103 ]
-    
+
     tr = ogrtest.check_features_against_list( mem_layer, 'DN', expect )
 
     if tr:
@@ -214,6 +219,7 @@ def polygonize_4():
 
 gdaltest_list = [
     polygonize_1,
+    polygonize_1_float,
     polygonize_2,
     polygonize_3,
     polygonize_4

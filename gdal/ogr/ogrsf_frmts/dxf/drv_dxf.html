@@ -33,9 +33,9 @@ The following element types are supported:<p>
 <li> POINT: Produces a simple point geometry feature.
 <li> MTEXT, TEXT: Produces a point feature with LABEL style information.
 <li> LINE, POLYLINE, LWPOLYLINE: translated as a LINESTRING. Rounded 
-polylines (those with their vertices' budge attributes set) will be tesselated.
+polylines (those with their vertices' budge attributes set) will be tessellated.
 Single-vertex polylines are translated to POINT.
-<li> CIRCLE, ELLIPSE, ARC:  Translated as a LINESTRING, tesselating the 
+<li> CIRCLE, ELLIPSE, ARC:  Translated as a LINESTRING, tessellating the
 arc into line segments. 
 <li> INSERT: An attempt is made to insert the block definition as defined
 in the insert.  Linework blocks are aggregated into a single feature with
@@ -101,7 +101,7 @@ In some cases the $DWGCODEPAGE setting in a DXF file will be wrong, or
 unrecognised by OGR.  It could be edited manually, or the DXF_ENCODING 
 configuration variable can be used to override what id will be used by 
 OGR in transcoding.  The value of DXF_ENCODING should be an encoding name
-supported by CPLRecode() (ie. an iconv name), not a DXF $DWGCODEPAGE name.
+supported by CPLRecode() (i.e. an iconv name), not a DXF $DWGCODEPAGE name.
 Using a DXF_ENCODING name of "UTF-8" will avoid any attempt to recode the 
 text as it is read.<p>
 
@@ -195,7 +195,7 @@ and referenced using the Linetype field if desired.<p>
 
 <h3>Units</h2>
 
-At the moment GDAL writes DXF to report the the measurement units as "English - Inches". 
+At the moment GDAL writes DXF to report the measurement units as "English - Inches". 
 For changing the units edit $MEASUREMENT and $INSUNITS variables in the header template.
 
 <h3>See also</h2>

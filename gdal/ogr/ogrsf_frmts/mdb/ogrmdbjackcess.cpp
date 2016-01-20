@@ -182,12 +182,12 @@ int OGRMDBJavaEnv::Init()
             JavaVMOption options[1];
             args.version = JNI_VERSION_1_2;
             const char* pszClassPath = CPLGetConfigOption("CLASSPATH", NULL);
-            CPLString osClassPathOption;
+            char* pszClassPathOption = NULL;
             if (pszClassPath)
             {
                 args.nOptions = 1;
-                osClassPathOption.Printf("-Djava.class.path=%s", pszClassPath);
-                options[0].optionString = (char*) osClassPathOption.c_str();
+                pszClassPathOption = CPLStrdup(CPLSPrintf("-Djava.class.path=%s", pszClassPath));
+                options[0].optionString = pszClassPathOption;
                 args.options = options;
             }
             else
@@ -195,6 +195,9 @@ int OGRMDBJavaEnv::Init()
             args.ignoreUnrecognized = JNI_FALSE;
 
             int ret = JNI_CreateJavaVM(&jvm, (void **)&env, &args);
+
+            CPLFree(pszClassPathOption);
+
             if (ret != 0 || jvm == NULL || env == NULL)
             {
                 CPLError(CE_Failure, CPLE_AppDefined, "JNI_CreateJavaVM failed (%d)", ret);
@@ -210,6 +213,8 @@ int OGRMDBJavaEnv::Init()
         jvm = jvm_static;
         env = env_static;
     }
+    if( env == NULL )
+        return FALSE;
 
     CHECK(byteArray_class, env->FindClass("[B"));
     CHECK(file_class, env->FindClass("java/io/File"));
@@ -409,11 +414,11 @@ OGRMDBTable* OGRMDBDatabase::GetTable(const char* pszTableName)
 /*                           OGRMDBTable()                              */
 /************************************************************************/
 
-OGRMDBTable::OGRMDBTable(OGRMDBJavaEnv* env, OGRMDBDatabase* poDB, jobject table, const char* pszTableName )
+OGRMDBTable::OGRMDBTable(OGRMDBJavaEnv* envIn, OGRMDBDatabase* poDBIn, jobject tableIn, const char* pszTableName )
 {
-    this->env = env;
-    this->poDB = poDB;
-    this->table = table;
+    this->env = envIn;
+    this->poDB = poDBIn;
+    this->table = tableIn;
     osTableName = pszTableName;
     table_iterator_obj = NULL;
     row = NULL;
@@ -683,7 +688,7 @@ void OGRMDBTable::DumpTable()
 {
     ResetReading();
     int iRow = 0;
-    int nCols = apoColumnNames.size();
+    int nCols = static_cast<int>(apoColumnNames.size());
     while(GetNextRow())
     {
         printf("Row = %d\n", iRow ++);
@@ -726,7 +731,7 @@ void OGRMDBTable::DumpTable()
 
 int OGRMDBTable::GetColumnIndex(const char* pszColName, int bEmitErrorIfNotFound)
 {
-    int nCols = apoColumnNames.size();
+    int nCols = static_cast<int>(apoColumnNames.size());
     CPLString osColName(pszColName);
     for(int i=0;i<nCols;i++)
     {

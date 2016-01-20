@@ -45,6 +45,10 @@ def vsifile_generic(filename):
     start_time = time.time()
 
     fp = gdal.VSIFOpenL(filename, 'wb+')
+    if fp is None:
+        gdaltest.post_reason('failure')
+        return 'fail'
+
     if gdal.VSIFWriteL('0123456789', 1, 10, fp) != 10:
         gdaltest.post_reason('failure')
         return 'fail'
@@ -90,6 +94,7 @@ def vsifile_generic(filename):
 
     if buf.decode('ascii') != '01234XX':
         gdaltest.post_reason('failure')
+        print(buf.decode('ascii'))
         return 'fail'
 
     # Test append mode on existing file
@@ -111,7 +116,7 @@ def vsifile_generic(filename):
     if statBuf is not None:
         gdaltest.post_reason('failure')
         return 'fail'
-    
+
     # Test append mode on non existing file
     fp = gdal.VSIFOpenL(filename, 'ab')
     gdal.VSIFWriteL('XX', 1, 2, fp)
@@ -126,7 +131,7 @@ def vsifile_generic(filename):
     if gdal.Unlink(filename) != 0:
         gdaltest.post_reason('failure')
         return 'fail'
-    
+
     return 'success'
 
 ###############################################################################
@@ -202,6 +207,7 @@ def vsifile_4():
     data = gdal.VSIFReadL(1, 1000000, fp)
     if len(data) == 0:
         return 'fail'
+    gdal.VSIFCloseL(fp)
 
     return 'success'
 
@@ -326,7 +332,10 @@ def vsifile_6():
 # Test limit cases on /vsimem
 
 def vsifile_7():
-    
+
+    if gdal.GetConfigOption('SKIP_MEM_INTENSIVE_TEST') is not None:
+        return 'skip'
+
     # Test extending file beyond reasonable limits in write mode
     fp = gdal.VSIFOpenL('/vsimem/vsifile_7.bin', 'wb')
     if gdal.VSIFSeekL(fp, 0x7FFFFFFFFFFFFFFF, 0) != 0:
@@ -368,7 +377,7 @@ def vsifile_8():
     gdal.Mkdir('/vsimem/mydir', 438)
     fp = gdal.VSIFOpenL('/vsimem/mydir/a', 'wb')
     gdal.VSIFCloseL(fp)
-    gdal.Rename('/vsimem/mydir', '/vsimem/newdir')
+    gdal.Rename('/vsimem/mydir', '/vsimem/newdir'.encode('ascii').decode('ascii'))
     if gdal.VSIStatL('/vsimem/newdir') is None:
         gdaltest.post_reason('fail')
         return 'fail'
@@ -380,6 +389,148 @@ def vsifile_8():
 
     return 'success'
 
+###############################################################################
+# Test ReadDir()
+
+def vsifile_9():
+
+    lst = gdal.ReadDir('.')
+    if len(lst) < 4:
+        gdaltest.post_reason('fail')
+        return 'fail'
+    # Test truncation
+    lst_truncated = gdal.ReadDir('.', int(len(lst)/2))
+    if len(lst_truncated) <= int(len(lst)/2):
+        gdaltest.post_reason('fail')
+        return 'fail'
+
+    gdal.Mkdir('/vsimem/mydir', 438)
+    for i in range(10):
+        fp = gdal.VSIFOpenL('/vsimem/mydir/%d' % i, 'wb')
+        gdal.VSIFCloseL(fp)
+
+    lst = gdal.ReadDir('/vsimem/mydir')
+    if len(lst) < 4:
+        gdaltest.post_reason('fail')
+        return 'fail'
+    # Test truncation
+    lst_truncated = gdal.ReadDir('/vsimem/mydir', int(len(lst)/2))
+    if len(lst_truncated) <= int(len(lst)/2):
+        gdaltest.post_reason('fail')
+        return 'fail'
+
+    for i in range(10):
+        gdal.Unlink('/vsimem/mydir/%d' % i)
+    gdal.Rmdir('/vsimem/newdir')
+
+    return 'success'
+
+###############################################################################
+# Test fuzzer friendly archive
+
+def vsifile_10():
+
+    gdal.FileFromMemBuffer('/vsimem/vsifile_10.tar',
+"""FUZZER_FRIENDLY_ARCHIVE
+***NEWFILE***:test.txt
+abc***NEWFILE***:huge.txt
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+0123456789012345678901234567890123456789012345678901234567890123456789012345678X
+***NEWFILE***:small.txt
+a""")
+    contents = gdal.ReadDir('/vsitar//vsimem/vsifile_10.tar')
+    if contents is None:
+        gdal.Unlink('/vsimem/vsifile_10.tar')
+        return 'skip'
+    if contents != ['test.txt', 'huge.txt', 'small.txt']:
+        gdaltest.post_reason('fail')
+        print(contents)
+        return 'fail'
+    if gdal.VSIStatL('/vsitar//vsimem/vsifile_10.tar/test.txt').size != 3:
+        gdaltest.post_reason('fail')
+        print(gdal.VSIStatL('/vsitar//vsimem/vsifile_10.tar/test.txt').size)
+        return 'fail'
+    if gdal.VSIStatL('/vsitar//vsimem/vsifile_10.tar/huge.txt').size != 3888:
+        gdaltest.post_reason('fail')
+        print(gdal.VSIStatL('/vsitar//vsimem/vsifile_10.tar/huge.txt').size)
+        return 'fail'
+    if gdal.VSIStatL('/vsitar//vsimem/vsifile_10.tar/small.txt').size != 1:
+        gdaltest.post_reason('fail')
+        print(gdal.VSIStatL('/vsitar//vsimem/vsifile_10.tar/small.txt').size)
+        return 'fail'
+
+
+    gdal.FileFromMemBuffer('/vsimem/vsifile_10.tar',
+"""FUZZER_FRIENDLY_ARCHIVE
+***NEWFILE***:x
+abc""")
+    contents = gdal.ReadDir('/vsitar//vsimem/vsifile_10.tar')
+    if contents != ['x']:
+        gdaltest.post_reason('fail')
+        print(contents)
+        return 'fail'
+
+
+    gdal.FileFromMemBuffer('/vsimem/vsifile_10.tar',
+"""FUZZER_FRIENDLY_ARCHIVE
+***NEWFILE***:x
+abc***NEWFILE***:""")
+    contents = gdal.ReadDir('/vsitar//vsimem/vsifile_10.tar')
+    if contents != ['x']:
+        gdaltest.post_reason('fail')
+        print(contents)
+        return 'fail'
+
+    gdal.Unlink('/vsimem/vsifile_10.tar')
+
+    return 'success'
+
 gdaltest_list = [ vsifile_1,
                   vsifile_2,
                   vsifile_3,
@@ -387,7 +538,9 @@ gdaltest_list = [ vsifile_1,
                   vsifile_5,
                   vsifile_6,
                   vsifile_7,
-                  vsifile_8 ]
+                  vsifile_8,
+                  vsifile_9,
+                  vsifile_10 ]
 
 if __name__ == '__main__':
 

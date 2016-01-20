@@ -6,10 +6,10 @@
 # Project:  GDAL/OGR Test Suite
 # Purpose:  Test read functionality for OGR PDF driver.
 # Author:   Even Rouault <even dot rouault at mines dash paris dot org>
-# 
+#
 ###############################################################################
 # Copyright (c) 2012, Even Rouault <even dot rouault at mines-paris dot org>
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
 # to deal in the Software without restriction, including without limitation
@@ -19,7 +19,7 @@
 #
 # The above copyright notice and this permission notice shall be included
 # in all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -108,7 +108,7 @@ def ogr_pdf_2(name = 'tmp/ogr_pdf_1.pdf', has_attributes = True):
     # Check read support
     gdal_pdf_drv = gdal.GetDriverByName('PDF')
     md = gdal_pdf_drv.GetMetadata()
-    if not 'HAVE_POPPLER' in md and not 'HAVE_PODOFO' in md:
+    if not 'HAVE_POPPLER' in md and not 'HAVE_PODOFO' in md and not 'HAVE_PDFIUM' in md:
         return 'skip'
 
     ds = ogr.Open(name)
@@ -226,7 +226,7 @@ def ogr_pdf_online_1():
     # Check read support
     gdal_pdf_drv = gdal.GetDriverByName('PDF')
     md = gdal_pdf_drv.GetMetadata()
-    if not 'HAVE_POPPLER' in md and not 'HAVE_PODOFO' in md:
+    if not 'HAVE_POPPLER' in md and not 'HAVE_PODOFO' in md and not 'HAVE_PDFIUM' in md:
         return 'skip'
 
     if not gdaltest.download_file('http://www.terragotech.com/system/files/geopdf/webmap_urbansample.pdf', 'webmap_urbansample.pdf'):

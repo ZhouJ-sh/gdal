@@ -181,7 +181,7 @@ def UseExceptions(*args):
 def DontUseExceptions(*args):
   """DontUseExceptions()"""
   return _ogr.DontUseExceptions(*args)
-# Backup original dictionnary before doing anything else
+# Backup original dictionary before doing anything else
 _initial_dict = globals().copy()
 
 @property
@@ -395,7 +395,7 @@ class Driver(MajorObject):
 
         papszOptions:  a StringList of name=value options. Options are driver
         specific, and driver information can be found at the following
-        url:http://www.gdal.org/ogr/ogr_formats.html
+        url:http://www.gdal.org/ogr_formats.html
 
         NULL is returned on failure, or a new OGRDataSource handle on success.
 
@@ -430,7 +430,7 @@ class Driver(MajorObject):
 
         papszOptions:  a StringList of name=value options. Options are driver
         specific, and driver information can be found at the following
-        url:http://www.gdal.org/ogr/ogr_formats.html
+        url:http://www.gdal.org/ogr_formats.html
 
         NULL is returned on failure, or a new OGRDataSource handle on success.
 
@@ -516,7 +516,7 @@ class Driver(MajorObject):
         sources.
 
         The #define macro forms of the capability names should be used in
-        preference to the strings themselves to avoid mispelling.
+        preference to the strings themselves to avoid misspelling.
 
         This function is the same as the C++ method
         OGRSFDriver::TestCapability().
@@ -548,7 +548,7 @@ class Driver(MajorObject):
         Parameters:
         -----------
 
-        hDriver:  handle to the the driver to get the name from.
+        hDriver:  handle to the driver to get the name from.
 
         driver name. This is an internal string and should not be modified or
         freed. 
@@ -771,7 +771,7 @@ class DataSource(MajorObject):
 
         papszOptions:  a StringList of name=value options. Options are driver
         specific, and driver information can be found at the following
-        url:http://www.gdal.org/ogr/ogr_formats.html
+        url:http://www.gdal.org/ogr_formats.html
 
         NULL is returned on failure, or a new OGRLayer handle on success.
         Example: 
@@ -860,7 +860,7 @@ class DataSource(MajorObject):
         ODsCCreateLayer: True if this datasource can create new layers.
 
         The #define macro forms of the capability names should be used in
-        preference to the strings themselves to avoid mispelling.
+        preference to the strings themselves to avoid misspelling.
 
         This function is the same as the C++ method
         OGRDataSource::TestCapability().
@@ -894,7 +894,7 @@ class DataSource(MajorObject):
         (destroyed).
 
         For more information on the SQL dialect supported internally by OGR
-        review theOGR SQL document. Some drivers (ie. Oracle and PostGIS) pass
+        review theOGR SQL document. Some drivers (i.e. Oracle and PostGIS) pass
         the SQL directly through to the underlying RDBMS.
 
         This function is the same as the C++ method
@@ -1382,7 +1382,7 @@ class Layer(MajorObject):
 
         Fetch the next available feature from this layer.
 
-        The returned feature becomes the responsiblity of the caller to delete
+        The returned feature becomes the responsibility of the caller to delete
         with OGR_F_Destroy(). It is critical that all features associated with
         an OGRLayer (more specifically an OGRFeatureDefn) be deleted before
         that layer/datasource is deleted.
@@ -1704,7 +1704,7 @@ class Layer(MajorObject):
         until a spatial filter is installed after which it will return FALSE.
 
         OLCFastGetExtent / "FastGetExtent": TRUE if this layer can return
-        its data extent (via OGR_L_GetExtent()) efficiently ... ie. without
+        its data extent (via OGR_L_GetExtent()) efficiently, i.e. without
         scanning all the features. In some cases this will return TRUE until a
         spatial filter is installed after which it will return FALSE.
 
@@ -1748,7 +1748,7 @@ class Layer(MajorObject):
         pszCap:  the name of the capability to test.
 
         TRUE if the layer has the requested capability, or FALSE otherwise.
-        OGRLayers will return FALSE for any unrecognised capabilities. 
+        OGRLayers will return FALSE for any unrecognized capabilities. 
         """
         return _ogr.Layer_TestCapability(self, *args)
 
@@ -1768,13 +1768,13 @@ class Layer(MajorObject):
         directly.
 
         This function should not be called while there are feature objects in
-        existance that were obtained or created with the previous layer
+        existence that were obtained or created with the previous layer
         definition.
 
         Not all drivers support this function. You can query a layer to check
         if it supports it with the OLCCreateField capability. Some drivers may
         only support this method while there are still no features in the
-        layer. When it is supported, the existings features of the backing
+        layer. When it is supported, the existing features of the backing
         file/database should be updated accordingly.
 
         This function is the same as the C++ method OGRLayer::CreateField().
@@ -1808,13 +1808,13 @@ class Layer(MajorObject):
         used by a layer directly.
 
         This function should not be called while there are feature objects in
-        existance that were obtained or created with the previous layer
+        existence that were obtained or created with the previous layer
         definition.
 
         Not all drivers support this function. You can query a layer to check
         if it supports it with the OLCDeleteField capability. Some drivers may
         only support this method while there are still no features in the
-        layer. When it is supported, the existings features of the backing
+        layer. When it is supported, the existing features of the backing
         file/database should be updated accordingly.
 
         This function is the same as the C++ method OGRLayer::DeleteField().
@@ -1842,7 +1842,7 @@ class Layer(MajorObject):
 
         Reorder an existing field on a layer.
 
-        This function is a conveniency wrapper of OGR_L_ReorderFields()
+        This function is a convenience wrapper of OGR_L_ReorderFields()
         dedicated to move a single field.
 
         You must use this to reorder existing fields on a real layer.
@@ -1851,7 +1851,7 @@ class Layer(MajorObject):
         OGRFeatureDefn used by a layer directly.
 
         This function should not be called while there are feature objects in
-        existance that were obtained or created with the previous layer
+        existence that were obtained or created with the previous layer
         definition.
 
         The field definition that was at initial position iOldFieldPos will be
@@ -1865,7 +1865,7 @@ class Layer(MajorObject):
         Not all drivers support this function. You can query a layer to check
         if it supports it with the OLCReorderFields capability. Some drivers
         may only support this method while there are still no features in the
-        layer. When it is supported, the existings features of the backing
+        layer. When it is supported, the existing features of the backing
         file/database should be updated accordingly.
 
         This function is the same as the C++ method OGRLayer::ReorderField().
@@ -1902,7 +1902,7 @@ class Layer(MajorObject):
         OGRFeatureDefn used by a layer directly.
 
         This function should not be called while there are feature objects in
-        existance that were obtained or created with the previous layer
+        existence that were obtained or created with the previous layer
         definition.
 
         panMap is such that,for each field definition at position i after
@@ -1915,7 +1915,7 @@ class Layer(MajorObject):
         Not all drivers support this function. You can query a layer to check
         if it supports it with the OLCReorderFields capability. Some drivers
         may only support this method while there are still no features in the
-        layer. When it is supported, the existings features of the backing
+        layer. When it is supported, the existing features of the backing
         file/database should be updated accordingly.
 
         This function is the same as the C++ method OGRLayer::ReorderFields().
@@ -1950,13 +1950,13 @@ class Layer(MajorObject):
         the OGRFeatureDefn used by a layer directly.
 
         This function should not be called while there are feature objects in
-        existance that were obtained or created with the previous layer
+        existence that were obtained or created with the previous layer
         definition.
 
         Not all drivers support this function. You can query a layer to check
         if it supports it with the OLCAlterFieldDefn capability. Some drivers
         may only support this method while there are still no features in the
-        layer. When it is supported, the existings features of the backing
+        layer. When it is supported, the existing features of the backing
         file/database should be updated accordingly. Some drivers might also
         not support all update flags.
 
@@ -3167,6 +3167,22 @@ class Feature(_object):
         """FillUnsetWithDefault(Feature self, int bNotNullableOnly=False, char ** options=None)"""
         return _ogr.Feature_FillUnsetWithDefault(self, *args)
 
+    def GetNativeData(self, *args):
+        """GetNativeData(Feature self) -> char const *"""
+        return _ogr.Feature_GetNativeData(self, *args)
+
+    def GetNativeMediaType(self, *args):
+        """GetNativeMediaType(Feature self) -> char const *"""
+        return _ogr.Feature_GetNativeMediaType(self, *args)
+
+    def SetNativeData(self, *args):
+        """SetNativeData(Feature self, char const * nativeData)"""
+        return _ogr.Feature_SetNativeData(self, *args)
+
+    def SetNativeMediaType(self, *args):
+        """SetNativeMediaType(Feature self, char const * nativeMediaType)"""
+        return _ogr.Feature_SetNativeMediaType(self, *args)
+
     def SetFieldString(self, *args):
         """
         SetFieldString(Feature self, int id, char const * value)
@@ -3212,7 +3228,7 @@ class Feature(_object):
     def __copy__(self):
         return self.Clone()
 
-    # This makes it possible to fetch fields in the form "feature.area". 
+    # This makes it possible to fetch fields in the form "feature.area".
     # This has some risk of name collisions.
     def __getattr__(self, key):
         """Returns the values of fields by the given name"""
@@ -3229,7 +3245,7 @@ class Feature(_object):
         else:
             return self.GetField(idx)
 
-    # This makes it possible to set fields in the form "feature.area". 
+    # This makes it possible to set fields in the form "feature.area".
     # This has some risk of name collisions.
     def __setattr__(self, key, value):
         """Set the values of fields by the given name"""
@@ -3246,7 +3262,7 @@ class Feature(_object):
                 else:
                     self.__dict__[key] = value
 
-    # This makes it possible to fetch fields in the form "feature['area']". 
+    # This makes it possible to fetch fields in the form "feature['area']".
     def __getitem__(self, key):
         """Returns the values of fields by the given name / field_index"""
         if isinstance(key, str):
@@ -3261,7 +3277,7 @@ class Feature(_object):
         else:
             return self.GetField(fld_index)
 
-    # This makes it possible to set fields in the form "feature['area'] = 123". 
+    # This makes it possible to set fields in the form "feature['area'] = 123".
     def __setitem__(self, key, value):
         """Returns the value of a field by field name / index"""
         if isinstance(key, str):
@@ -3317,9 +3333,9 @@ class Feature(_object):
         SetField(self, char name, int value)
         SetField(self, int id, double value)
         SetField(self, char name, double value)
-        SetField(self, int id, int year, int month, int day, int hour, int minute, 
+        SetField(self, int id, int year, int month, int day, int hour, int minute,
             int second, int tzflag)
-        SetField(self, char name, int year, int month, int day, int hour, 
+        SetField(self, char name, int year, int month, int day, int hour,
             int minute, int second, int tzflag)
         """
 
@@ -3388,7 +3404,7 @@ class Feature(_object):
 
     def ExportToJson(self, as_object = False, options = None):
         """Exports a GeoJSON object which represents the Feature. The
-           as_object parameter determines whether the returned value 
+           as_object parameter determines whether the returned value
            should be a Python object instead of a string. Defaults to False.
            The options parameter is passed to Geometry.ExportToJson()"""
 
@@ -3412,12 +3428,12 @@ class Feature(_object):
         output = {'type':'Feature',
                    'geometry': geom_json_object,
                    'properties': {}
-                  } 
-        
+                  }
+
         fid = self.GetFID()
         if fid != NullFID:
             output['id'] = fid
-            
+
         for key in self.keys():
             fld_defn = self.GetFieldDefnRef(self.GetFieldIndex(key))
             if fld_defn.GetType() == _ogr.OFTInteger and fld_defn.GetSubType() == _ogr.OFSTBoolean:
@@ -3427,7 +3443,7 @@ class Feature(_object):
                     output['properties'][key] = False
             else:
                 output['properties'][key] = self.GetField(key)
-        
+
         if not as_object:
             output = simplejson.dumps(output)
 
@@ -3561,7 +3577,7 @@ class FeatureDefn(_object):
         function directly, but use OGR_L_CreateField() instead.
 
         This function should only be called while there are no OGRFeature
-        objects in existance based on this OGRFeatureDefn. The OGRFieldDefn
+        objects in existence based on this OGRFeatureDefn. The OGRFieldDefn
         passed in is copied, and remains the responsibility of the caller.
 
         This function is the same as the C++ method
@@ -3662,7 +3678,7 @@ class FeatureDefn(_object):
         Parameters:
         -----------
 
-        hDefn:  hanlde to the feature definition on witch OGRFeature are based
+        hDefn:  handle to the feature definition on witch OGRFeature are based
         on.
 
         the current reference count. 
@@ -3684,7 +3700,7 @@ class FeatureDefn(_object):
         Parameters:
         -----------
 
-        hDefn:  hanlde to the feature definition on witch OGRFeature are based
+        hDefn:  handle to the feature definition on witch OGRFeature are based
         on.
 
         ignore state 
@@ -3706,7 +3722,7 @@ class FeatureDefn(_object):
         Parameters:
         -----------
 
-        hDefn:  hanlde to the feature definition on witch OGRFeature are based
+        hDefn:  handle to the feature definition on witch OGRFeature are based
         on.
 
         bIgnore:  ignore state 
@@ -3750,7 +3766,7 @@ class FeatureDefn(_object):
         Parameters:
         -----------
 
-        hDefn:  hanlde to the feature definition on witch OGRFeature are based
+        hDefn:  handle to the feature definition on witch OGRFeature are based
         on.
 
         bIgnore:  ignore state 
@@ -4933,9 +4949,9 @@ class Geometry(_object):
 
         Do these features intersect?
 
-        Currently this is not implemented in a rigerous fashion, and generally
+        Currently this is not implemented in a rigorous fashion, and generally
         just tests whether the envelopes of the two features intersect.
-        Eventually this will be made rigerous.
+        Eventually this will be made rigorous.
 
         This function is the same as the CPP method OGRGeometry::Intersects.
 
@@ -5557,13 +5573,13 @@ class Geometry(_object):
         return _ogr.Geometry_Value(self, *args)
 
     def Destroy(self):
-      self.__swig_destroy__(self) 
+      self.__swig_destroy__(self)
       self.__del__()
       self.thisown = 0
 
     def __str__(self):
       return self.ExportToWkt()
-      
+
 
     def __reduce__(self):
       return (self.__class__, (), self.ExportToWkb())
@@ -5571,11 +5587,11 @@ class Geometry(_object):
     def __setstate__(self, state):
         result = CreateGeometryFromWkb(state)
         self.this = result.this
-          
+
     def __iter__(self):
         self.iter_subgeom = 0
         return self
-        
+
     def next(self):
         if self.iter_subgeom < self.GetGeometryCount():
             subgeom = self.GetGeometryRef(self.iter_subgeom)

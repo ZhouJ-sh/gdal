@@ -1,5 +1,5 @@
 /******************************************************************************
- * $Id: geo_normalize.c 2595 2014-12-27 22:59:32Z rouault $
+ * $Id: geo_normalize.c 2712 2016-01-11 11:36:59Z rouault $
  *
  * Project:  libgeotiff
  * Purpose:  Code to normalize PCS and other composite codes in a GeoTIFF file.
@@ -36,8 +36,8 @@
 #  define KvUserDefined 32767
 #endif
 
-#ifndef PI
-#  define PI 3.14159265358979323846
+#ifndef M_PI
+#  define M_PI 3.14159265358979323846
 #endif
 
 /* EPSG Codes for projection parameters.  Unfortunately, these bear no
@@ -74,6 +74,29 @@
 #define EPSGTopocentricOriginHeight 8836
 
 #define CT_Ext_Mercator_2SP     -CT_Mercator
+
+#ifndef CPL_INLINE
+#if (defined(__GNUC__) && !defined(__NO_INLINE__)) || defined(_MSC_VER)
+#define HAS_CPL_INLINE  1
+#define CPL_INLINE __inline
+#elif defined(__SUNPRO_CC)
+#define HAS_CPL_INLINE  1
+#define CPL_INLINE inline
+#else
+#define CPL_INLINE
+#endif
+#endif
+
+#ifndef CPL_UNUSED
+#if defined(__GNUC__) && __GNUC__ >= 4
+#  define CPL_UNUSED __attribute((__unused__))
+#else
+/* TODO: add cases for other compilers */
+#  define CPL_UNUSED
+#endif
+#endif
+
+CPL_INLINE static void CPL_IGNORE_RET_VAL_INT(CPL_UNUSED int unused) {}
 
 /************************************************************************/
 /*                           GTIFGetPCSInfo()                           */
@@ -203,7 +226,7 @@ int GTIFGetPCSInfo( int nPCSCode, char **ppszEPSGName,
         if( atoi(pszValue) > 0 )
             *pnProjOp = (short) atoi(pszValue);
         else
-            *pnUOMLengthCode = KvUserDefined;
+            *pnProjOp = KvUserDefined;
     }
 
 /* -------------------------------------------------------------------- */
@@ -228,7 +251,7 @@ int GTIFGetPCSInfo( int nPCSCode, char **ppszEPSGName,
 /************************************************************************/
 /*                           GTIFAngleToDD()                            */
 /*                                                                      */
-/*      Convert a numeric angle to decimal degress.                     */
+/*      Convert a numeric angle to decimal degrees.                     */
 /************************************************************************/
 
 double GTIFAngleToDD( double dfAngle, int nUOMAngle )
@@ -311,7 +334,7 @@ double GTIFAngleStringToDD( const char * pszAngle, int nUOMAngle )
     }
     else if( nUOMAngle == 9101 )			/* radians */
     {
-        dfAngle = 180 * (GTIFAtof(pszAngle ) / PI);
+        dfAngle = 180 * (GTIFAtof(pszAngle ) / M_PI);
     }
     else if( nUOMAngle == 9103 )			/* arc-minute */
     {
@@ -321,7 +344,7 @@ double GTIFAngleStringToDD( const char * pszAngle, int nUOMAngle )
     {
         dfAngle = GTIFAtof(pszAngle) / 3600;
     }
-    else /* decimal degrees ... some cases missing but seeminly never used */
+    else /* decimal degrees ... some cases missing but seemingly never used */
     {
         CPLAssert( nUOMAngle == 9102 || nUOMAngle == KvUserDefined
                    || nUOMAngle == 0 );
@@ -584,8 +607,6 @@ int GTIFGetEllipsoidInfo( int nEllipseCode, char ** ppszName,
 
         if( *pdfSemiMinor == 0.0 )
         {
-            double	dfInvFlattening;
-            
             dfInvFlattening = 
                 GTIFAtof(CSVGetField( CSVFilename("ellipsoid.csv"),
                                   "ELLIPSOID_CODE", szSearchKey, CC_Integer,
@@ -905,7 +926,7 @@ int GTIFGetUOMAngleInfo( int nUOMAngleCode,
     {
       case 9101:
         pszUOMName = "radian";
-        dfInDegrees = 180.0 / PI;
+        dfInDegrees = 180.0 / M_PI;
         break;
 
       case 9102:
@@ -939,7 +960,7 @@ int GTIFGetUOMAngleInfo( int nUOMAngleCode,
 
       case 9109:
         pszUOMName = "microradian";
-        dfInDegrees = 180.0 / (PI * 1000000.0);
+        dfInDegrees = 180.0 / (M_PI * 1000000.0);
         break;
 
       default:
@@ -950,10 +971,7 @@ int GTIFGetUOMAngleInfo( int nUOMAngleCode,
     {
         if( ppszUOMName != NULL )
         {
-            if( pszUOMName != NULL )
-                *ppszUOMName = CPLStrdup( pszUOMName );
-            else
-                *ppszUOMName = NULL;
+            *ppszUOMName = CPLStrdup( pszUOMName );
         }
 
         if( pdfInDegrees != NULL )
@@ -991,8 +1009,11 @@ int GTIFGetUOMAngleInfo( int nUOMAngleCode,
         if( dfFactorC != 0.0 )
         {
             dfInRadians = (dfFactorB / dfFactorC);
-            dfInDegrees = dfInRadians * 180.0 / PI;
+            dfInDegrees = dfInRadians * 180.0 / M_PI;
         }
+
+        if( ppszUOMName != NULL )
+            *ppszUOMName = CPLStrdup( pszUOMName );
     }
     else
     {
@@ -1002,13 +1023,6 @@ int GTIFGetUOMAngleInfo( int nUOMAngleCode,
 /* -------------------------------------------------------------------- */
 /*      Return to caller.                                               */
 /* -------------------------------------------------------------------- */
-    if( ppszUOMName != NULL )
-    {
-        if( pszUOMName != NULL )
-            *ppszUOMName = CPLStrdup( pszUOMName );
-        else
-            *ppszUOMName = NULL;
-    }
 
     if( pdfInDegrees != NULL )
         *pdfInDegrees = dfInDegrees;
@@ -1112,14 +1126,12 @@ static int EPSGProjMethodToCTProjMethod( int nEPSG, int bReturnExtendedCTCode )
       default: /* use the EPSG code for other methods */
         return nEPSG;
     }
-
-    return( KvUserDefined );
 }
 
 /************************************************************************/
 /*                            SetGTParmIds()                            */
 /*                                                                      */
-/*      This is hardcoded logic to set the GeoTIFF parmaeter            */
+/*      This is hardcoded logic to set the GeoTIFF parameter            */
 /*      identifiers for all the EPSG supported projections.  As the     */
 /*      trf_method.csv table grows with new projections, this code      */
 /*      will need to be updated.                                        */
@@ -2151,7 +2163,7 @@ static void GTIFFetchProjParms( GTIF * psGTIF, GTIFDefn * psDefn )
 
 This function reads the coordinate system definition from a GeoTIFF file,
 and <i>normalizes</i> it into a set of component information using 
-definitions from CSV (Comma Seperated Value ASCII) files derived from 
+definitions from CSV (Comma Separated Value ASCII) files derived from 
 EPSG tables.  This function is intended to simplify correct support for
 reading files with defined PCS (Projected Coordinate System) codes that
 wouldn't otherwise be directly known by application software by reducing
@@ -2159,7 +2171,7 @@ it to the underlying projection method, parameters, datum, ellipsoid,
 prime meridian and units.<p>
 
 The application should pass a pointer to an existing uninitialized 
-GTIFDefn structure, and GTIFGetDefn() will fill it in.  The fuction 
+GTIFDefn structure, and GTIFGetDefn() will fill it in.  The function 
 currently always returns TRUE but in the future will return FALSE if 
 CSV files are not found.  In any event, all geokeys actually found in the
 file will be copied into the GTIFDefn.  However, if the CSV files aren't
@@ -2225,7 +2237,7 @@ Projection Linear Units: 9003/US survey foot (0.304801m)
 </pre>
 
 Note that GTIFGetDefn() does not inspect or return the tiepoints and scale.
-This must be handled seperately as it normally would.  It is intended to
+This must be handled separately as it normally would.  It is intended to
 simplify capture and normalization of the coordinate system definition.  
 Note that GTIFGetDefn() also does the following things:
 
@@ -2443,8 +2455,8 @@ int GTIFGetDefn( GTIF * psGTIF, GTIFDefn * psDefn )
 /*      to warn if they conflict with provided information, but for     */
 /*      now we just override.                                           */
 /* -------------------------------------------------------------------- */
-    GTIFKeyGetDOUBLE(psGTIF, GeogSemiMajorAxisGeoKey, &(psDefn->SemiMajor), 0, 1 );
-    GTIFKeyGetDOUBLE(psGTIF, GeogSemiMinorAxisGeoKey, &(psDefn->SemiMinor), 0, 1 );
+    CPL_IGNORE_RET_VAL_INT(GTIFKeyGetDOUBLE(psGTIF, GeogSemiMajorAxisGeoKey, &(psDefn->SemiMajor), 0, 1 ));
+    CPL_IGNORE_RET_VAL_INT(GTIFKeyGetDOUBLE(psGTIF, GeogSemiMinorAxisGeoKey, &(psDefn->SemiMinor), 0, 1 ));
     
     if( GTIFKeyGetDOUBLE(psGTIF, GeogInvFlatteningGeoKey, &dfInvFlattening, 
                    0, 1 ) == 1 )
@@ -2467,8 +2479,8 @@ int GTIFGetDefn( GTIF * psGTIF, GTIFDefn * psDefn )
     }
     else
     {
-        GTIFKeyGetDOUBLE(psGTIF, GeogPrimeMeridianLongGeoKey,
-                   &(psDefn->PMLongToGreenwich), 0, 1 );
+        CPL_IGNORE_RET_VAL_INT(GTIFKeyGetDOUBLE(psGTIF, GeogPrimeMeridianLongGeoKey,
+                   &(psDefn->PMLongToGreenwich), 0, 1 ));
 
         psDefn->PMLongToGreenwich =
             GTIFAngleToDD( psDefn->PMLongToGreenwich,
@@ -2480,7 +2492,7 @@ int GTIFGetDefn( GTIF * psGTIF, GTIFDefn * psDefn )
 /* -------------------------------------------------------------------- */
 #if !defined(GEO_NORMALIZE_DISABLE_TOWGS84)
     psDefn->TOWGS84Count = 
-        GTIFKeyGetDOUBLE(psGTIF, GeogTOWGS84GeoKey, psDefn->TOWGS84, 0, 7 );
+        (short)GTIFKeyGetDOUBLE(psGTIF, GeogTOWGS84GeoKey, psDefn->TOWGS84, 0, 7 );
 #endif
 
 /* -------------------------------------------------------------------- */
@@ -2498,7 +2510,7 @@ int GTIFGetDefn( GTIF * psGTIF, GTIFDefn * psDefn )
     }
     else
     {
-        GTIFKeyGetDOUBLE(psGTIF,ProjLinearUnitSizeGeoKey,&(psDefn->UOMLengthInMeters),0,1);
+        CPL_IGNORE_RET_VAL_INT(GTIFKeyGetDOUBLE(psGTIF,ProjLinearUnitSizeGeoKey,&(psDefn->UOMLengthInMeters),0,1));
     }
 
 /* -------------------------------------------------------------------- */

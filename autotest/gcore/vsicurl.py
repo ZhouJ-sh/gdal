@@ -5,10 +5,10 @@
 # Project:  GDAL/OGR Test Suite
 # Purpose:  Test /vsicurl
 # Author:   Even Rouault <even dot rouault at mines dash paris dot org>
-# 
+#
 ###############################################################################
 # Copyright (c) 2011, Even Rouault <even dot rouault at mines-paris dot org>
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
 # to deal in the Software without restriction, including without limitation
@@ -18,7 +18,7 @@
 #
 # The above copyright notice and this permission notice shall be included
 # in all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -209,8 +209,8 @@ def vsicurl_8():
     return 'success'
 
 ###############################################################################
-# Test reading a file with chinese characters, but the http file listing
-# returns escaped sequences instead of the chinese characters
+# Test reading a file with Chinese characters, but the HTTP file listing
+# returns escaped sequences instead of the Chinese characters.
 
 def vsicurl_9():
     if not gdaltest.run_slow_tests():
@@ -237,7 +237,7 @@ def vsicurl_9():
     return 'success'
 
 ###############################################################################
-# Test reading a file with escaped chinese characters
+# Test reading a file with escaped Chinese characters.
 
 def vsicurl_10():
     if not gdaltest.run_slow_tests():
@@ -286,13 +286,13 @@ def vsicurl_11():
     return 'success'
 
 gdaltest_list = [ vsicurl_1,
-                  vsicurl_2,
-                  vsicurl_3,
+                  #vsicurl_2,
+                  #vsicurl_3,
                   vsicurl_4,
                   vsicurl_5,
                   vsicurl_6,
                   vsicurl_7,
-                  vsicurl_8,
+                  #vsicurl_8,
                   vsicurl_9,
                   vsicurl_10,
                   vsicurl_11 ]

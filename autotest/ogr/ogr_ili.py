@@ -220,7 +220,9 @@ def ogr_interlis1_5():
 
     driver = ogr.GetDriverByName( 'Interlis 1' )
     outfile = "tmp/interlis1_5.itf"
-    dst_ds = driver.CreateDataSource(outfile)
+
+    with gdaltest.error_handler():
+        dst_ds = driver.CreateDataSource(outfile)
 
     dst_lyr = dst_ds.CreateLayer( 'FormatTests__FormatTable' )
 
@@ -297,7 +299,7 @@ ENDE"""
     return 'success'
 
 ###############################################################################
-# Ili1 character encding test.
+# Ili1 character encoding test.
 
 def ogr_interlis1_7():
 
@@ -1059,7 +1061,7 @@ def ogr_interlis_arc1():
     ds = ogr.Open('data/ili/Beispiel.itf,data/ili/Beispiel.imd')
 
     gdal.SetConfigOption('OGR_STROKE_CURVE', None)
-    
+
     length_0_1_deg = 72.7181992353 # Line length with 0.1 degree segments
 
     #Read Area lines
@@ -1181,4 +1183,3 @@ if __name__ == '__main__':
     gdaltest.run_tests( gdaltest_list )
 
     gdaltest.summarize()
-

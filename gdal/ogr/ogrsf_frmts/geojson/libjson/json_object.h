@@ -10,8 +10,8 @@
  *
  */
 
-#ifndef _json_object_h_
-#define _json_object_h_
+#ifndef json_object_h_
+#define json_object_h_
 
 #include "symbol_renames.h"
 #include "cpl_port.h"
@@ -407,7 +407,7 @@ extern int CPL_DLL json_object_array_add(struct json_object *obj,
 extern int json_object_array_put_idx(struct json_object *obj, int idx,
 				     struct json_object *val);
 
-/** Get the element at specificed index of the array (a json_object of type json_type_array)
+/** Get the element at specified index of the array (a json_object of type json_type_array)
  * @param obj the json_object instance
  * @param idx the index to get the element at
  * @returns the json_object at the specified index (or NULL)

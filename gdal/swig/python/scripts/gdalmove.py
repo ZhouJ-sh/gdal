@@ -1,24 +1,24 @@
 #!/usr/bin/env python
 #******************************************************************************
-# 
+#
 #  Project:  GDAL Python Interface
 #  Purpose:  Application for "warping" an image by just updating it's SRS
 #            and geotransform.
 #  Author:   Frank Warmerdam, warmerdam@pobox.com
-# 
+#
 #******************************************************************************
 #  Copyright (c) 2012, Frank Warmerdam
-# 
+#
 #  Permission is hereby granted, free of charge, to any person obtaining a
 #  copy of this software and associated documentation files (the "Software"),
 #  to deal in the Software without restriction, including without limitation
 #  the rights to use, copy, modify, merge, publish, distribute, sublicense,
 #  and/or sell copies of the Software, and to permit persons to whom the
 #  Software is furnished to do so, subject to the following conditions:
-# 
+#
 #  The above copyright notice and this permission notice shall be included
 #  in all copies or substantial portions of the Software.
-# 
+#
 #  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 #  OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -28,9 +28,10 @@
 #  DEALINGS IN THE SOFTWARE.
 #******************************************************************************
 
-from osgeo import gdal, osr
-import sys
 import math
+import sys
+
+from osgeo import gdal, osr
 
 ###############################################################################
 def fmt_loc( srs_obj, loc):
@@ -38,18 +39,18 @@ def fmt_loc( srs_obj, loc):
         return '%12.3f %12.3f' % (loc[0], loc[1])
     else:
         return '%12.8f %12.8f' % (loc[0], loc[1])
-    
+
 ###############################################################################
 def move( filename, t_srs, s_srs=None, pixel_threshold = None ):
 
     # -------------------------------------------------------------------------
-    # Open the file. 
+    # Open the file.
     # -------------------------------------------------------------------------
     ds = gdal.Open( filename )
 
     # -------------------------------------------------------------------------
     # Compute the current (s_srs) locations of the four corners and center
-    # of the image. 
+    # of the image.
     # -------------------------------------------------------------------------
     corners_names = [
         'Upper Left',
@@ -57,7 +58,7 @@ def move( filename, t_srs, s_srs=None, pixel_threshold = None ):
         'Upper Right',
         'Lower Right',
         'Center' ]
-    
+
     corners_pixel_line = [
         (0, 0, 0),
         (0, ds.RasterYSize,0),
@@ -115,7 +116,7 @@ def move( filename, t_srs, s_srs=None, pixel_threshold = None ):
               (ur[1] - ul[1]) / ds.RasterXSize,
               (ll[1] - ul[1]) / ds.RasterYSize)
 
-    (x,inv_new_gt) = gdal.InvGeoTransform( new_gt )
+    inv_new_gt = gdal.InvGeoTransform( new_gt )
     
     # -------------------------------------------------------------------------
     #  Report results for the five locations.
@@ -171,10 +172,10 @@ def move( filename, t_srs, s_srs=None, pixel_threshold = None ):
         if this_error > max_error:
             max_error = this_error
 
-    update = 0
+    update = False
     if pixel_threshold is not None:
         if pixel_threshold > max_error:
-            update = 1
+            update = True
 
     # -------------------------------------------------------------------------
     # Apply the change coordinate system and geotransform.
@@ -208,8 +209,7 @@ gdalmove.py [-s_srs <srs_defn>] -t_srs <srs_defn>
 #############################################################################
 # Main
 
-if __name__ == '__main__':
-
+def main():
     # Default GDAL argument parsing.
     
     argv = gdal.GeneralCmdLineProcessor( sys.argv )
@@ -222,7 +222,6 @@ if __name__ == '__main__':
     # Script argument defaults
     s_srs = None
     t_srs = None
-    update=0
     filename = None
     pixel_threshold = None
 
@@ -264,3 +263,7 @@ if __name__ == '__main__':
 
 
     move( filename, t_srs, s_srs, pixel_threshold )
+
+
+if __name__ == '__main__':
+    main()

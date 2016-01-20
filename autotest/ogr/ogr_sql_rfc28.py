@@ -6,11 +6,11 @@
 # Project:  GDAL/OGR Test Suite
 # Purpose:  Test OGR SQL capabilities added as part of RFC 28 implementation.
 # Author:   Frank Warmerdam <warmerdam@pobox.com>
-# 
+#
 ###############################################################################
 # Copyright (c) 2010, Frank Warmerdam <warmerdam@pobox.com>
 # Copyright (c) 2010-2014, Even Rouault <even dot rouault at mines-paris dot org>
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
 # to deal in the Software without restriction, including without limitation
@@ -20,7 +20,7 @@
 #
 # The above copyright notice and this permission notice shall be included
 # in all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -129,8 +129,9 @@ def ogr_rfc28_6():
 # test with distinguished name for field in where clause.
 
 def ogr_rfc28_7_wrong_quoting():
-    ql = gdaltest.ds.ExecuteSQL( "select eas_id from idlink where \"idlink.eas_id\" = 166" )
-    
+    with gdaltest.error_handler():
+        ql = gdaltest.ds.ExecuteSQL( "select eas_id from idlink where \"idlink.eas_id\" = 166" )
+
     count = ql.GetFeatureCount()
     if count != 1:
         gdaltest.post_reason( 'Got wrong count with GetFeatureCount() - %d, expecting 1' % count )
@@ -141,7 +142,7 @@ def ogr_rfc28_7_wrong_quoting():
 
 def ogr_rfc28_7_good_quoting():
     ql = gdaltest.ds.ExecuteSQL( "select eas_id from idlink where idlink.eas_id = 166" )
-    
+
     count = ql.GetFeatureCount()
     if count != 1:
         gdaltest.post_reason( 'Got wrong count with GetFeatureCount() - %d, expecting 1' % count )
@@ -154,8 +155,9 @@ def ogr_rfc28_7_good_quoting():
 # test with distinguished name for field in target columns.
 
 def ogr_rfc28_8_wrong_quoting():
-    ql = gdaltest.ds.ExecuteSQL( "select \"idlink.eas_id\" from idlink where \"idlink.eas_id\" = 166" )
-    
+    with gdaltest.error_handler():
+        ql = gdaltest.ds.ExecuteSQL( "select \"idlink.eas_id\" from idlink where \"idlink.eas_id\" = 166" )
+
     count = ql.GetFeatureCount()
     if count != 1:
         gdaltest.post_reason( 'Got wrong count with GetFeatureCount() - %d, expecting 1' % count )
@@ -163,7 +165,7 @@ def ogr_rfc28_8_wrong_quoting():
 
     expect = [ 166 ]
     tr = ogrtest.check_features_against_list( ql, 'idlink.eas_id', expect )
-    
+
     gdaltest.ds.ReleaseResultSet( ql )
 
     if tr:
@@ -173,7 +175,7 @@ def ogr_rfc28_8_wrong_quoting():
 
 def ogr_rfc28_8_good_quoting():
     ql = gdaltest.ds.ExecuteSQL( "select idlink.eas_id from idlink where idlink.eas_id = 166" )
-    
+
     count = ql.GetFeatureCount()
     if count != 1:
         gdaltest.post_reason( 'Got wrong count with GetFeatureCount() - %d, expecting 1' % count )
@@ -181,7 +183,7 @@ def ogr_rfc28_8_good_quoting():
 
     expect = [ 166 ]
     tr = ogrtest.check_features_against_list( ql, 'idlink.eas_id', expect )
-    
+
     gdaltest.ds.ReleaseResultSet( ql )
 
     if tr:
@@ -209,6 +211,7 @@ def ogr_rfc28_9():
     else:
         return 'fail'
 
+# TODO: unparse quoting?
 ###############################################################################
 # test quoted names for funky columns in SELECT WHERE (confirm unparse quoting)
 
@@ -224,7 +227,7 @@ def ogr_rfc28_10():
     expect = [ '8902' ]
     tr = ogrtest.check_features_against_list( lyr, 'PRIME_MERIDIAN_CODE', expect )
     ds.ReleaseResultSet( lyr )
-    
+
     if tr:
         return 'success'
     else:
@@ -245,7 +248,7 @@ def ogr_rfc28_11():
     expect = [ '32' ]
     tr = ogrtest.check_features_against_list( lyr, 'Funky @Name', expect )
     ds.ReleaseResultSet( lyr )
-    
+
     if tr:
         return 'success'
     else:
@@ -264,19 +267,19 @@ def ogr_rfc28_12():
 
     expect = [ 'other' ]
     tr = ogrtest.check_features_against_list( lyr, 'abc', expect )
-    
+
     expect = [ 165 ]
     if tr:
         lyr.ResetReading()
         tr = ogrtest.check_features_against_list( lyr, 'eas_id', expect )
-    
+
     expect = [ 'constant string' ]
     if tr:
         lyr.ResetReading()
         tr = ogrtest.check_features_against_list( lyr, 'field_1', expect )
-    
+
     gdaltest.ds.ReleaseResultSet( lyr )
-    
+
     if tr:
         return 'success'
     else:
@@ -306,7 +309,7 @@ def ogr_rfc28_14():
     tr = ogrtest.check_features_against_list( lyr, 'substr_prfedea', expect )
 
     gdaltest.ds.ReleaseResultSet( lyr )
-    
+
     if tr:
         return 'success'
     else:
@@ -322,7 +325,7 @@ def ogr_rfc28_15():
     tr = ogrtest.check_features_against_list( lyr, 'concat_prfedea', expect )
 
     gdaltest.ds.ReleaseResultSet( lyr )
-    
+
     if tr:
         return 'success'
     else:
@@ -354,7 +357,7 @@ def ogr_rfc28_16():
     tr = ogrtest.check_features_against_list( lyr, 'field_5', expect )
 
     gdaltest.ds.ReleaseResultSet( lyr )
-    
+
     if tr:
         return 'success'
     else:
@@ -382,7 +385,7 @@ def ogr_rfc28_17():
     tr = ogrtest.check_features_against_list( lyr, 'field_4', expect )
 
     gdaltest.ds.ReleaseResultSet( lyr )
-    
+
     if tr:
         return 'success'
     else:
@@ -403,7 +406,7 @@ def ogr_rfc28_18():
     tr = ogrtest.check_features_against_list( lyr, 'xx', expect )
 
     gdaltest.ds.ReleaseResultSet( lyr )
-    
+
     if tr:
         return 'success'
     else:
@@ -788,14 +791,15 @@ def ogr_rfc28_33():
         return 'fail'
 
 ###############################################################################
-# Test wildchar expension of an unknown table
+# Test wildcard expansion of an unknown table.
 
 def ogr_rfc28_34():
 
     gdal.PushErrorHandler('CPLQuietErrorHandler')
     lyr = gdaltest.ds.ExecuteSQL( "select foo.* from idlink" )
     gdal.PopErrorHandler()
-    if gdal.GetLastErrorMsg().find('Table foo not recognised from foo.* definition') != 0:
+    if gdal.GetLastErrorMsg().find(
+            'Table foo not recognised from foo.* definition') != 0:
         print(gdal.GetLastErrorMsg())
         return 'fail'
 
@@ -1202,7 +1206,7 @@ def ogr_rfc28_44():
     lyr = ds.CreateLayer('field')
     fld_defn = ogr.FieldDefn('id', ogr.OFTInteger)
     lyr.CreateField(fld_defn)
-    
+
     gdal.ErrorReset()
     gdal.PushErrorHandler()
     lyr = ds.ExecuteSQL( "SELECT * FROM \"lyr.withpoint\" JOIN field ON \"lyr.withpoint\".foo = field.id WHERE field.withpoint = 1" )
@@ -1236,7 +1240,7 @@ def ogr_rfc28_44():
 def ogr_rfc28_45():
 
     ql = gdaltest.ds.ExecuteSQL( "select eas_id from idlink as il where il.eas_id = 166" )
-    
+
     count = ql.GetFeatureCount()
     if count != 1:
         gdaltest.post_reason( 'Got wrong count with GetFeatureCount() - %d, expecting 1' % count )

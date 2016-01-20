@@ -4,7 +4,17 @@ include GDALmake.opt
 GDAL_OBJ	=	$(GDAL_ROOT)/frmts/o/*.o \
 			$(GDAL_ROOT)/gcore/*.o \
 			$(GDAL_ROOT)/port/*.o \
-			$(GDAL_ROOT)/alg/*.o
+			$(GDAL_ROOT)/alg/*.o \
+ 			$(GDAL_ROOT)/apps/commonutils.o \
+			$(GDAL_ROOT)/apps/gdalinfo_lib.o \
+			$(GDAL_ROOT)/apps/gdal_translate_lib.o \
+			$(GDAL_ROOT)/apps/gdalwarp_lib.o \
+			$(GDAL_ROOT)/apps/ogr2ogr_lib.o \
+			$(GDAL_ROOT)/apps/gdaldem_lib.o \
+			$(GDAL_ROOT)/apps/nearblack_lib.o \
+			$(GDAL_ROOT)/apps/gdal_grid_lib.o \
+			$(GDAL_ROOT)/apps/gdal_rasterize_lib.o \
+			$(GDAL_ROOT)/apps/gdalbuildvrt_lib.o
 
 GDAL_OBJ += $(GDAL_ROOT)/ogr/ogrsf_frmts/o/*.o
 
@@ -21,6 +31,9 @@ LIBGDAL-$(HAVE_LD_SHARED)	+=	$(GDAL_SLIB)
 LIBGDAL-$(HAVE_LIBTOOL)	:= $(LIBGDAL)
 
 default:	lib-target apps-target swig-target gdal.pc
+ifeq ($(PDF_PLUGIN),yes)
+	(cd frmts/pdf; $(MAKE) plugin)
+endif
 
 lib-target:	check-lib;
 
@@ -48,8 +61,11 @@ ifeq ($(MACOSX_FRAMEWORK),yes)
 	install_name_tool -id ${OSX_VERSION_FRAMEWORK_PREFIX}/GDAL .libs/libgdal.dylib
 endif
 
-check-lib:	port-target core-target frmts-target ogr-target gnm-target
+check-lib:	port-target core-target frmts-target ogr-target gnm-target appslib-target
 	$(MAKE) $(LIBGDAL-yes)
+
+appslib-target:
+	(cd apps; $(MAKE) appslib)
 
 port-target:
 	(cd port; $(MAKE))
@@ -98,7 +114,9 @@ clean:	lclean
 ifneq ($(BINDINGS),)
 	(cd swig; $(MAKE) clean)
 endif
-
+ifeq ($(PDF_PLUGIN),yes)
+	(cd frmts/pdf; $(MAKE) clean)
+endif
 
 
 lclean:

@@ -9,7 +9,7 @@
 
 <p>OGR optionally supports spatial and non-spatial tables stored in SQLite 3.x
 database files.  SQLite is a "light weight" single file based RDBMS engine
-with fairly complete SQL semantics and respectible performance.</p>
+with fairly complete SQL semantics and respectable performance.</p>
 
 <p>The driver can handle "regular" SQLite databases, as well as Spatialite
 databases (spatial enabled SQLite databases).</p>
@@ -28,7 +28,7 @@ to operate only on SQLite files on a physical disk of the local system.</p>
 
 <p>By default, SQL statements are passed directly to the SQLite database engine.
 It's also possible to request the driver to handle SQL commands 
-with <a href="/ogr/ogr_sql.html">OGR SQL</a> engine, 
+with <a href="ogr_sql.html">OGR SQL</a> engine, 
 by passing <strong>"OGRSQL"</strong> string to the ExecuteSQL() 
 method, as name of the SQL dialect.</p>
 
@@ -45,7 +45,7 @@ OGR_SQLITE_PRAGMA = "pragma_name=pragma_value[,pragma_name2=pragma_value2]*".</p
 
 <h2>"Regular" SQLite databases</h2>
 
-<p>The driver looks for a geometry_columns table layed out as defined
+<p>The driver looks for a geometry_columns table laid out as defined
 loosely according to OGC Simple Features standards, particularly as defined
 in <A href="http://trac.osgeo.org/fdo/wiki/FDORfc16">FDO RFC 16</a>.  If
 found it is used to map tables to layers.</P>
@@ -78,7 +78,7 @@ modified or read, following new API described in <a href="http://trac.osgeo.org/
 <p>
 In GDAL 1.10, such support was read-only and there were as many OGR layers exposed
 as there are geometry columns. They were named "table_name(geometry_column_name)".
-Such syntax is still possible with GDAL 2.0 when explictely querying a layer
+Such syntax is still possible with GDAL 2.0 when explicitly querying a layer
 with GetLayerByName()</p>
 
 <h2>REGEXP operator</h2>
@@ -147,7 +147,7 @@ CREATE VIRTUAL TABLE table_name USING VirtualOGR(datasource_name, update_mode, l
 
 where :
 <ul>
-<li><i>datasource_name</i> is the connexion string to any OGR datasource.</li>
+<li><i>datasource_name</i> is the connetion string to any OGR datasource.</li>
 <li><i>update_mode</i> = 0 for read-only mode (default value) or 1 for update mode.</li>
 <li><i>layer_name</i> = the name of a layer of the opened datasource.</li>
 <li><i>expose_ogr_style</i> = 0 to prevent the OGR_STYLE special from being displayed (default value) or 1 to expose it.</li>
@@ -236,13 +236,13 @@ from OGC specifications. Implies <b>METADATA=YES</b>.<br>
 Please note: (Starting with GDAL 1.9.0) OGR must be linked against <i>libspatialite</i> in order to support
 insert/write on SpatiaLite; if not, <i>read-only</i> mode is enforced.<br>
 Attempting to perform any insert/write on SpatiaLite skipping the appropriate library support simply produces broken (corrupted) DB-files.<br>
-Important notice: when the underlaying <i>libspatialite</i> is v.2.3.1 (or any previous
+Important notice: when the underlying <i>libspatialite</i> is v.2.3.1 (or any previous
 version) any Geometry will be casted to 2D [XY], because earlier versions of this library
 are simply able to support 2D [XY] dimensions. Version 2.4.0 (or any subsequent) is required in order to support 2.5D [XYZ].</p></li>
 
 <li><p><b>INIT_WITH_EPSG=YES/NO</b>: (Starting with GDAL 1.8.0) Insert the content of the EPSG CSV files
 into the spatial_ref_sys table. Defaults to NO for regular SQLite databases</b>.<br>
-Please note: if <b>SPATIALITE=YES</b> and the underlaying <i>libspatialite</i> is v2.4 or v3.X,
+Please note: if <b>SPATIALITE=YES</b> and the underlying <i>libspatialite</i> is v2.4 or v3.X,
 <b>INIT_WITH_EPSG</b> is ignored; those library versions will unconditionally load the EPSG 
 dataset into the spatial_ref_sys table when creating a new DB (<i>self-initialization</i>). Starting
 with libspatialite 4.0, INIT_WITH_EPSG defaults to YES, but can be set to NO.</p></li>
@@ -266,7 +266,7 @@ geometry column named GEOMETRY (or WKT_GEOMETRY if FORMAT=WKT). If you wish to u
 it can be supplied with the GEOMETRY_NAME layer creation option.</p></li>
 
 <li><p><b>LAUNDER=YES/NO</b>: Controls whether layer and field names will be 
-laundered for easier use in SQLite.  Laundered names will be convered to lower 
+laundered for easier use in SQLite.  Laundered names will be converted to lower 
 case and some special characters(' - #) will be changed to underscores. Default
 to YES.</p></li>
 
@@ -292,7 +292,7 @@ not be done : the specified SRID is used as such.</p></li>
 A list of (String) columns that must be compressed with ZLib DEFLATE algorithm. This might be beneficial
 for databases that have big string blobs. However, use with care, since the value of such columns
 will be seen as compressed binary content with other SQLite utilities (or previous OGR versions).
-With OGR, when inserting, modifying or queryings compressed columns, compression/decompression is done transparently.
+With OGR, when inserting, modifying or querying compressed columns, compression/decompression is done transparently.
 However, such columns cannot be (easily) queried with an attribute filter or WHERE clause.
 Note: in table definition, such columns have the "VARCHAR_deflate" declaration type.</p></li>
 

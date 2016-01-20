@@ -47,7 +47,8 @@
  * Added note saying that SWIG 1.3.26 or higher is required because the bindings need the SWIGTYPE *DISOWN  typemap.
  *
  * Revision 1.3  2005/08/21 23:52:08  cfis
- * The Layer each method was not correctly setting the owernship flag for returned objects.  This has now been fixed and commented.
+ * The Layer each method was not correctly setting the ownership flag
+ * for returned objects.  This has now been fixed and commented.
  *
  * Revision 1.2  2005/08/20 20:50:13  cfis
  * Added GetLayer method that maps to either GetLayerByName or GetLayerByIndex.  Also commented out Open and OpenShared as DataSouce class static methods.
@@ -76,7 +77,7 @@
  * double *val, int *hasval, is a special contrived typemap used for
  * the RasterBand GetNoDataValue, GetMinimum, GetMaximum, GetOffset, GetScale methods.
  * In the Ruby bindings, the variable hasval is tested.  If it is 0 (is, the value
- * is not set in the raster band) then Py_None is returned.  If is is != 0, then
+ * is not set in the raster band) then Py_None is returned.  If it is != 0, then
  * the value is coerced into a long and returned.
  */
 %typemap(in,numinputs=0) (double *val, int *hasval) (double tmpval, int tmphasval) {
@@ -233,7 +234,7 @@
   for( int i = 0; i<$1; i++ ) {
     /* Get the Ruby Object */
     VALUE item = rb_ary_entry($input,i);
-    /* Conver to an integer */
+    /* Convert to an integer */
     $2[i] = NUM2INT(item);
   }
 }
@@ -684,7 +685,7 @@
 		If the parent goes out of scope it will free the child, invalidating
 		the scripting language object that represents the child.  To prevent
 		that create a reference from the child to the parent, thereby telling
-		the garabage collector not to GC the parent.*/
+		the garbage collector not to GC the parent. */
 
 	$result = SWIG_NewPointerObj((void *) $1, $1_descriptor,$owner);
 	rb_iv_set($result, "swig_parent_reference", self);

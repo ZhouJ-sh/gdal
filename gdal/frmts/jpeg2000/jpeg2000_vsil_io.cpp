@@ -93,13 +93,13 @@ typedef struct {
 static int JPEG2000_VSIL_read(jas_stream_obj_t *obj, char *buf, int cnt)
 {
 	jas_stream_VSIFL_t *fileobj = JAS_CAST(jas_stream_VSIFL_t *, obj);
-	return VSIFReadL(buf, 1, cnt, fileobj->fp);
+	return static_cast<int>(VSIFReadL(buf, 1, cnt, fileobj->fp));
 }
 
 static int JPEG2000_VSIL_write(jas_stream_obj_t *obj, char *buf, int cnt)
 {
 	jas_stream_VSIFL_t *fileobj = JAS_CAST(jas_stream_VSIFL_t *, obj);
-	return VSIFWriteL(buf, 1, cnt, fileobj->fp);
+	return static_cast<int>(VSIFWriteL(buf, 1, cnt, fileobj->fp));
 }
 
 static long JPEG2000_VSIL_seek(jas_stream_obj_t *obj, long offset, int origin)
@@ -123,13 +123,16 @@ static long JPEG2000_VSIL_seek(jas_stream_obj_t *obj, long offset, int origin)
 static int JPEG2000_VSIL_close(jas_stream_obj_t *obj)
 {
 	jas_stream_VSIFL_t *fileobj = JAS_CAST(jas_stream_VSIFL_t *, obj);
-    VSIFCloseL(fileobj->fp);
-    fileobj->fp = NULL;
+        if( fileobj->fp != NULL )
+        {
+            VSIFCloseL(fileobj->fp);
+            fileobj->fp = NULL;
+        }
 	jas_free(fileobj);
 	return 0;
 }
 
-static jas_stream_ops_t JPEG2000_VSIL_stream_fileops = {
+static const jas_stream_ops_t JPEG2000_VSIL_stream_fileops = {
 	JPEG2000_VSIL_read,
 	JPEG2000_VSIL_write,
 	JPEG2000_VSIL_seek,
@@ -273,11 +276,11 @@ jas_stream_t *JPEG2000_VSIL_fopen(const char *filename, const char *mode)
 	stream->obj_ = (void *) obj;
 
 	/* Select the operations for a file stream object. */
-	stream->ops_ = &JPEG2000_VSIL_stream_fileops;
+	stream->ops_ = const_cast<jas_stream_ops_t*> (&JPEG2000_VSIL_stream_fileops);
 
 	/* Open the underlying file. */
 	if ((obj->fp = VSIFOpenL(filename, mode)) == NULL) {
-		JPEG2000_VSIL_jas_stream_destroy(stream);
+		jas_stream_close(stream);
 		return 0;
 	}
 

@@ -88,7 +88,7 @@ Code flags --
     set the size of floating point numbers
 
   qh_REALdigits
-    maximimum number of significant digits
+    maximum number of significant digits
 
   qh_REAL_1, qh_REAL_2n, qh_REAL_3n
     format strings for printf
@@ -471,7 +471,7 @@ stop after qh_JOGGLEmaxretry attempts
     default box size (Geomview expects 0.5)
 
   qh_DEFAULTbox
-    default box size for integer coorindate (rbox only)
+    default box size for integer coordinate (rbox only)
 */
 #define qh_DEFAULTbox 0.5
 #define qh_DEFAULTzbox 1e6

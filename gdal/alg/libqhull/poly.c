@@ -453,7 +453,7 @@ int qh_gethash(int hashsize, setT *set, int size, int firstindex, void *skipelem
     qh_fprintf(qh ferr, 6202, "qhull internal error: negative hashsize %d passed to qh_gethash [poly.c]\n", hashsize);
     qh_errexit2 (qh_ERRqhull, NULL, NULL);
   }
-  result= (unsigned)hash;
+  result= (unsigned)(hash & 0xFFFFFFFFU);
   result %= (unsigned)hashsize;
   /* result= 0; for debugging */
   return result;
@@ -661,7 +661,7 @@ facetT *qh_makenew_simplicial(facetT *visible, vertexT *apex, int *numnew) {
   facetT *neighbor, **neighborp, *newfacet= NULL;
   setT *vertices;
   boolT flip, toporient;
-  int horizonskip, visibleskip;
+  int horizonskip=0, visibleskip;
 
   FOREACHneighbor_(visible) {
     if (!neighbor->seen && !neighbor->visible) {
@@ -779,7 +779,10 @@ void qh_matchneighbor(facetT *newfacet, int newskip, int hashsize, int *hashcoun
           qh_setfacetplane(facet);
         if (matchfacet) {
           matchskip= qh_setindex(matchfacet->neighbors, facet);
-          SETelem_(matchfacet->neighbors, matchskip)= qh_DUPLICATEridge;
+          if( matchskip >= 0 )
+          {
+            SETelem_(matchfacet->neighbors, matchskip)= qh_DUPLICATEridge;
+          }
           matchfacet->dupridge= True;
           if (!matchfacet->normal)
             qh_setfacetplane(matchfacet);
@@ -858,7 +861,10 @@ void qh_matchnewfacets(void /* qh newfacet_list */) {
   hashsize= qh_setsize(qh hash_table);
   FORALLnew_facets {
     for (newskip=1; newskip<qh hull_dim; newskip++) /* furthest/horizon already matched */
-      qh_matchneighbor(newfacet, newskip, hashsize, &hashcount);
+    {
+      if( hashsize )
+        qh_matchneighbor(newfacet, newskip, hashsize, &hashcount);
+    }
 #if 0   /* use the following to trap hashcount errors */
     {
       int count= 0, k;
@@ -1194,6 +1200,3 @@ void qh_updatevertices(void /*qh newvertex_list, newfacet_list, visible_list*/) 
     }
   }
 } /* updatevertices */
-
-
-

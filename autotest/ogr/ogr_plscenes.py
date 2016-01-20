@@ -6,10 +6,10 @@
 # Project:  GDAL/OGR Test Suite
 # Purpose:  PlanetLabs scene driver test suite.
 # Author:   Even Rouault, even dot rouault at spatialys.com
-# 
+#
 ###############################################################################
 # Copyright (c) 2015, Planet Labs
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
 # to deal in the Software without restriction, including without limitation
@@ -19,7 +19,7 @@
 #
 # The above copyright notice and this permission notice shall be included
 # in all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -44,7 +44,7 @@ import gdaltest
 def ogr_plscenes_1():
 
     gdaltest.plscenes_drv = ogr.GetDriverByName('PLScenes')
-    
+
     if gdaltest.plscenes_drv is not None:
         return 'success'
     else:
@@ -194,13 +194,13 @@ def ogr_plscenes_2():
     }
 }"""
 
-    gdal.FileFromMemBuffer('/vsimem/root/ortho/?count=1&intersects=POINT%282.5%2049.5%29',
+    gdal.FileFromMemBuffer('/vsimem/root/ortho/?count=1&intersects=POINT(2.5%2049.5)',
                            my_id_only)
 
-    gdal.FileFromMemBuffer('/vsimem/root/ortho/?count=1&intersects=POLYGON%20%28%282%2049%2C2%2050%2C3%2050%2C3%2049%2C2%2049%29%29',
+    gdal.FileFromMemBuffer('/vsimem/root/ortho/?count=1&intersects=POLYGON%20((2%2049,2%2050,3%2050,3%2049,2%2049))',
                            my_id_only)
 
-    gdal.FileFromMemBuffer('/vsimem/root/ortho/?count=1000&intersects=POINT%282.5%2049.5%29',
+    gdal.FileFromMemBuffer('/vsimem/root/ortho/?count=1000&intersects=POINT(2.5%2049.5)',
                            my_id_only)
 
     gdal.FileFromMemBuffer('/vsimem/root/ortho/?count=1000&camera.color_mode.eq=RGB&acquired.gte=2015-03-27T12:34:56&acquired.lt=2015-03-27T12:34:57&cloud_cover.estimated.gt=0.20000000&camera.bit_depth.lte=12&camera.bit_depth.gte=12&camera.bit_depth.lt=13',
@@ -476,7 +476,7 @@ def ogr_plscenes_2():
         gdaltest.post_reason('fail')
         return 'fail'
     lyr.SetSpatialFilterRect(2.5,49.5,2.5,49.5)
-    if lyr.GetFeatureCount() != 1:
+    if lyr.GetFeatureCount() != 1 and gdal.GetLastErrorMsg().find('GEOS support not enabled') < 0:
         gdaltest.post_reason('fail')
         return 'fail'
     ds = None
@@ -495,9 +495,9 @@ def ogr_plscenes_2():
     gdal.Unlink('/vsimem/root/ortho/?count=1')
     gdal.Unlink('/vsimem/root/ortho/?count=1000')
     gdal.Unlink('/vsimem/root/ortho/?count=1000&page=2')
-    gdal.Unlink('/vsimem/root/ortho/?count=1&intersects=POINT%282.5%2049.5%29')
-    gdal.Unlink('/vsimem/root/ortho/?count=1&intersects=POLYGON%20%28%282%2049%2C2%2050%2C3%2050%2C3%2049%2C2%2049%29%29')
-    gdal.Unlink('/vsimem/root/ortho/?count=1000&intersects=POINT%282.5%2049.5%29')
+    gdal.Unlink('/vsimem/root/ortho/?count=1&intersects=POINT(2.5%2049.5)')
+    gdal.Unlink('/vsimem/root/ortho/?count=1&intersects=POLYGON%20((2%2049,2%2050,3%2050,3%2049,2%2049))')
+    gdal.Unlink('/vsimem/root/ortho/?count=1000&intersects=POINT(2.5%2049.5)')
     gdal.Unlink('/vsimem/root/ortho/?count=1&camera.color_mode.eq=RGB&acquired.gte=2015-03-27T12:34:56&acquired.lt=2015-03-27T12:34:57&cloud_cover.estimated.gt=0.20000000&camera.bit_depth.lte=12&camera.bit_depth.gte=12&camera.bit_depth.lt=13')
     gdal.Unlink('/vsimem/root/ortho/?count=1000&camera.color_mode.eq=RGB&acquired.gte=2015-03-27T12:34:56&acquired.lt=2015-03-27T12:34:57&cloud_cover.estimated.gt=0.20000000&camera.bit_depth.lte=12&camera.bit_depth.gte=12&camera.bit_depth.lt=13')
     gdal.Unlink('/vsimem/root/ortho/?count=1000&order_by=acquired%20asc')
@@ -537,7 +537,7 @@ def ogr_plscenes_3():
         gdaltest.post_reason('fail')
         return 'fail'
 
-    # Error case: mssing properties
+    # Error case: missing properties.
     gdal.FileFromMemBuffer('/vsimem/root/ortho/my_id', """{}""")
 
     gdal.SetConfigOption('PL_URL', '/vsimem/root/')

@@ -28,8 +28,8 @@
  * DEALINGS IN THE SOFTWARE.
  ****************************************************************************/
 
-#ifndef _OGRSF_FRMTS_H_INCLUDED
-#define _OGRSF_FRMTS_H_INCLUDED
+#ifndef OGRSF_FRMTS_H_INCLUDED
+#define OGRSF_FRMTS_H_INCLUDED
 
 #include "cpl_progress.h"
 #include "ogr_feature.h"
@@ -75,15 +75,15 @@ class CPL_DLL OGRLayer : public GDALMajorObject
     OGREnvelope  m_sFilterEnvelope;
     int          m_iGeomFieldFilter; // specify the index on which the spatial
                                      // filter is active.
-    
+
     int          FilterGeometry( OGRGeometry * );
     //int          FilterGeometry( OGRGeometry *, OGREnvelope* psGeometryEnvelope);
     int          InstallFilter( OGRGeometry * );
-    
+
     OGRErr       GetExtentInternal(int iGeomField, OGREnvelope *psExtent, int bForce );
 
-    virtual OGRErr      ISetFeature( OGRFeature *poFeature );
-    virtual OGRErr      ICreateFeature( OGRFeature *poFeature );
+    virtual OGRErr      ISetFeature( OGRFeature *poFeature ) CPL_WARN_UNUSED_RESULT;
+    virtual OGRErr      ICreateFeature( OGRFeature *poFeature )  CPL_WARN_UNUSED_RESULT;
 
   public:
     OGRLayer();
@@ -102,14 +102,14 @@ class CPL_DLL OGRLayer : public GDALMajorObject
     virtual OGRErr      SetAttributeFilter( const char * );
 
     virtual void        ResetReading() = 0;
-    virtual OGRFeature *GetNextFeature() = 0;
+    virtual OGRFeature *GetNextFeature() CPL_WARN_UNUSED_RESULT = 0;
     virtual OGRErr      SetNextByIndex( GIntBig nIndex );
-    virtual OGRFeature *GetFeature( GIntBig nFID );
+    virtual OGRFeature *GetFeature( GIntBig nFID )  CPL_WARN_UNUSED_RESULT;
 
-    OGRErr      SetFeature( OGRFeature *poFeature );
-    OGRErr      CreateFeature( OGRFeature *poFeature );
+    OGRErr      SetFeature( OGRFeature *poFeature )  CPL_WARN_UNUSED_RESULT;
+    OGRErr      CreateFeature( OGRFeature *poFeature ) CPL_WARN_UNUSED_RESULT;
 
-    virtual OGRErr      DeleteFeature( GIntBig nFID );
+    virtual OGRErr      DeleteFeature( GIntBig nFID )  CPL_WARN_UNUSED_RESULT;
 
     virtual const char *GetName();
     virtual OGRwkbGeometryType GetGeomType();
@@ -119,9 +119,9 @@ class CPL_DLL OGRLayer : public GDALMajorObject
     virtual OGRSpatialReference *GetSpatialRef();
 
     virtual GIntBig     GetFeatureCount( int bForce = TRUE );
-    virtual OGRErr      GetExtent(OGREnvelope *psExtent, int bForce = TRUE);
+    virtual OGRErr      GetExtent(OGREnvelope *psExtent, int bForce = TRUE)  CPL_WARN_UNUSED_RESULT;
     virtual OGRErr      GetExtent(int iGeomField, OGREnvelope *psExtent,
-                                  int bForce = TRUE);
+                                  int bForce = TRUE)  CPL_WARN_UNUSED_RESULT;
 
     virtual int         TestCapability( const char * ) = 0;
 
@@ -138,11 +138,11 @@ class CPL_DLL OGRLayer : public GDALMajorObject
 
     virtual OGRStyleTable *GetStyleTable();
     virtual void        SetStyleTableDirectly( OGRStyleTable *poStyleTable );
-                            
+
     virtual void        SetStyleTable(OGRStyleTable *poStyleTable);
 
-    virtual OGRErr      StartTransaction();
-    virtual OGRErr      CommitTransaction();
+    virtual OGRErr      StartTransaction() CPL_WARN_UNUSED_RESULT;
+    virtual OGRErr      CommitTransaction() CPL_WARN_UNUSED_RESULT;
     virtual OGRErr      RollbackTransaction();
 
     virtual const char *GetFIDColumn();
@@ -185,14 +185,14 @@ class CPL_DLL OGRLayer : public GDALMajorObject
                                char** papszOptions = NULL, 
                                GDALProgressFunc pfnProgress = NULL, 
                                void * pProgressArg = NULL );
-    
+
     int                 Reference();
     int                 Dereference();
     int                 GetRefCount() const;
 
     GIntBig             GetFeaturesRead();
 
-    /* non virtual : conveniency wrapper for ReorderFields() */
+    /* non virtual : convenience wrapper for ReorderFields() */
     OGRErr              ReorderField( int iOldFieldPos, int iNewFieldPos );
 
     int                 AttributeFilterEvaluationNeedsGeometry();
@@ -275,7 +275,7 @@ class CPL_DLL OGRSFDriver : public GDALDriver
     virtual const char  *GetName() OGR_DEPRECATED("Use GDALDriver class instead") = 0;
 
     virtual OGRDataSource *Open( const char *pszName, int bUpdate=FALSE ) OGR_DEPRECATED("Use GDALDriver class instead") = 0;
-    
+
     virtual int            TestCapability( const char *pszCap ) OGR_DEPRECATED("Use GDALDriver class instead") = 0;
 
     virtual OGRDataSource *CreateDataSource( const char *pszName,
@@ -338,6 +338,7 @@ void OGRRegisterAllInternal();
 
 void CPL_DLL RegisterOGRFileGDB();
 void CPL_DLL RegisterOGRShape();
+void CPL_DLL RegisterOGRDB2();
 void CPL_DLL RegisterOGRNTF();
 void CPL_DLL RegisterOGRFME();
 void CPL_DLL RegisterOGRSDTS();
@@ -398,7 +399,6 @@ void CPL_DLL RegisterOGRGeomedia();
 void CPL_DLL RegisterOGRMDB();
 void CPL_DLL RegisterOGREDIGEO();
 void CPL_DLL RegisterOGRGFT();
-void CPL_DLL RegisterOGRGME();
 void CPL_DLL RegisterOGRSVG();
 void CPL_DLL RegisterOGRCouchDB();
 void CPL_DLL RegisterOGRCloudant();
@@ -413,6 +413,7 @@ void CPL_DLL RegisterOGRElastic();
 void CPL_DLL RegisterOGRGeoPackage();
 void CPL_DLL RegisterOGRWalk();
 void CPL_DLL RegisterOGRCartoDB();
+void CPL_DLL RegisterOGRAmigoCloud();
 void CPL_DLL RegisterOGRSXF();
 void CPL_DLL RegisterOGROpenFileGDB();
 void CPL_DLL RegisterOGRSelafin();
@@ -420,8 +421,8 @@ void CPL_DLL RegisterOGRJML();
 void CPL_DLL RegisterOGRPLSCENES();
 void CPL_DLL RegisterOGRCSW();
 void CPL_DLL RegisterOGRMongoDB();
-void CPL_DLL RegisterOGRIDF();
+void CPL_DLL RegisterOGRVDV();
 CPL_C_END
 
 
-#endif /* ndef _OGRSF_FRMTS_H_INCLUDED */
+#endif /* ndef OGRSF_FRMTS_H_INCLUDED */

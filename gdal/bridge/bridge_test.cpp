@@ -34,7 +34,7 @@
 #include <math.h>
 #include "gdalbridge.h"
 
-static int 
+static int
 GDALInfoReportCorner( GDALDatasetH hDataset, 
                       const char * corner_name,
                       double x, double y );
@@ -52,7 +52,7 @@ int main( int argc, char ** argv )
 
     if( !GDALBridgeInitialize( "..", stderr ) )
     {
-        fprintf( stderr, "Unable to intiailize GDAL bridge.\n" );
+        fprintf( stderr, "Unable to initialize GDAL bridge.\n" );
         exit( 10 );
     }
 
@@ -65,7 +65,7 @@ int main( int argc, char ** argv )
     GDALAllRegister();
 
     hDataset = GDALOpen( argv[1], GA_ReadOnly );
-    
+
     if( hDataset == NULL )
     {
         fprintf( stderr,
@@ -73,7 +73,7 @@ int main( int argc, char ** argv )
                  CPLGetLastErrorNo(), CPLGetLastErrorMsg() );
         exit( 1 );
     }
-    
+
 /* -------------------------------------------------------------------- */
 /*      Report general info.                                            */
 /* -------------------------------------------------------------------- */
@@ -132,7 +132,7 @@ int main( int argc, char ** argv )
         for( i = 0; i < GDALGetGCPCount(hDataset); i++ )
         {
             const GDAL_GCP	*psGCP;
-            
+
             psGCP = GDALGetGCPs( hDataset ) + i;
 
             printf( "GCP[%3d]: Id=%s, Info=%s\n"
@@ -205,7 +205,7 @@ int main( int argc, char ** argv )
         dfMin = GDALGetRasterMinimum( hBand, &bGotMin );
         dfMax = GDALGetRasterMaximum( hBand, &bGotMax );
         printf( "  Min=%.3f/%d, Max=%.3f/%d",  dfMin, bGotMin, dfMax, bGotMax);
-        
+
         if( bComputeMinMax )
         {
             GDALComputeRasterMinMax( hBand, TRUE, adfCMinMax );
@@ -279,7 +279,7 @@ int main( int argc, char ** argv )
     }
 
     GDALClose( hDataset );
-    
+
     exit( 0 );
 }
 
@@ -297,9 +297,9 @@ GDALInfoReportCorner( GDALDatasetH hDataset,
     const char  *pszProjection;
     double	adfGeoTransform[6];
     OGRCoordinateTransformationH hTransform = NULL;
-        
+
     printf( "%-11s ", corner_name );
-    
+
 /* -------------------------------------------------------------------- */
 /*      Transform the point into georeferenced coordinates.             */
 /* -------------------------------------------------------------------- */
@@ -359,14 +359,14 @@ GDALInfoReportCorner( GDALDatasetH hDataset,
     if( hTransform != NULL 
         && OCTTransform(hTransform,1,&dfGeoX,&dfGeoY,NULL) )
     {
-        
+
         printf( "(%s,", GDALDecToDMS( dfGeoX, "Long", 2 ) );
         printf( "%s)", GDALDecToDMS( dfGeoY, "Lat", 2 ) );
     }
 
     if( hTransform != NULL )
         OCTDestroyCoordinateTransformation( hTransform );
-    
+
     printf( "\n" );
 
     return TRUE;

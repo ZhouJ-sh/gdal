@@ -6,12 +6,12 @@
 # Project:  GDAL/OGR Test Suite
 # Purpose:  Test NetCDF driver support.
 # Author:   Frank Warmerdam <warmerdam@pobox.com>
-# 
+#
 ###############################################################################
 # Copyright (c) 2007, Frank Warmerdam <warmerdam@pobox.com>
 # Copyright (c) 2008-2013, Even Rouault <even dot rouault at mines-paris dot org>
 # Copyright (c) 2010, Kyle Shannon <kyle at pobox dot com>
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
 # to deal in the Software without restriction, including without limitation
@@ -21,7 +21,7 @@
 #
 # The above copyright notice and this permission notice shall be included
 # in all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -92,7 +92,7 @@ def netcdf_setup():
     print( 'NOTICE: using netcdf version ' + gdaltest.netcdf_drv_version + \
                '  has_nc2: '+str(gdaltest.netcdf_drv_has_nc2)+'  has_nc4: ' + \
                str(gdaltest.netcdf_drv_has_nc4) )
-    
+
     return 'success'
 
 ###############################################################################
@@ -134,7 +134,7 @@ def netcdf_test_copy_timeout( ifile, band, checksum, ofile, opts=[], driver='NET
                 drv.Delete( ofile )
             print('testCreateCopy() for file %s has reached timeout limit of %d seconds' % (ofile, timeout) )
             result = 'fail'
-            
+
     return result
 
 ###############################################################################
@@ -162,7 +162,7 @@ def netcdf_test_deflate( ifile, checksum, zlevel=1, timeout=None ):
     if not os.path.exists( ifile ):
         gdaltest.post_reason( 'ifile %s does not exist' % ifile )
         return 'fail'
- 
+
     result1 = netcdf_test_copy_timeout( ifile, 1, checksum, ofile1, ofile1_opts, 'NETCDF', timeout )
 
     result2 = netcdf_test_copy_timeout( ifile, 1, checksum, ofile2, ofile2_opts, 'NETCDF', timeout )
@@ -209,7 +209,7 @@ def netcdf_check_vars( ifile, vals_global=None, vals_band=None ):
         gdaltest.post_reason( 'could not get Band metadata' )
         return 'fail'
 
-    
+
     metadata = metadata_global
     vals = vals_global
     if vals is None:
@@ -271,7 +271,7 @@ def netcdf_1():
 
 ###############################################################################
 # Verify a simple createcopy operation.  We can't do the trivial gdaltest
-# operation because the new file will only be accessable via subdatasets!
+# operation because the new file will only be accessible via subdatasets.
 
 def netcdf_2():
 
@@ -279,7 +279,7 @@ def netcdf_2():
         return 'skip'
 
     src_ds = gdal.Open( 'data/byte.tif' )
-    
+
     base_ds = gdaltest.netcdf_drv.CreateCopy( 'tmp/netcdf2.nc', src_ds)
     del base_ds
 
@@ -334,7 +334,7 @@ def netcdf_3():
     ds = None
 
     return 'success'
-    
+
 ###############################################################################
 # In #2582 5dimensional files were causing problems.  Verify use ok.
 
@@ -355,7 +355,7 @@ def netcdf_4():
     gdal.PopErrorHandler()
 
     return result
-    
+
 ###############################################################################
 # In #2583 5dimensional files were having problems unrolling the highest
 # dimension - check handling now on band 7.
@@ -401,7 +401,7 @@ def netcdf_6():
     ds = None
 
     return 'success'
-    
+
 ###############################################################################
 #ticket #3324 check spatial reference reading for cf-1.4 lambert conformal
 #2 standard parallels.
@@ -427,7 +427,7 @@ def netcdf_7():
     sr = None
 
     return 'success'
-    
+
 ###############################################################################
 #check for cf convention read of albers equal area
 # Previous version compared entire wkt, which varies slightly among driver versions
@@ -451,16 +451,16 @@ def netcdf_8():
     if param != 37.5:
         gdaltest.post_reason( 'Got wrong parameter value (%g)' % param )
         return 'fail'
-   
+
     param = srs.GetProjParm('longitude_of_center')
     if param != -96:
         gdaltest.post_reason( 'Got wrong parameter value (%g)' % param )
         return 'fail'
- 
+
     ds = None
 
     return 'success'
-    
+
 ###############################################################################
 #check to see if projected systems default to wgs84 if no spheroid def
 def netcdf_9():
@@ -485,7 +485,7 @@ def netcdf_9():
     sr = None
 
     return 'success'
-    
+
 ###############################################################################
 #check if km pixel size makes it through to gt
 def netcdf_10():
@@ -517,7 +517,7 @@ def netcdf_10():
     ds = None
 
     return 'success'
-    
+
 ###############################################################################
 #check if ll gets caught in km pixel size check
 def netcdf_11():
@@ -593,7 +593,7 @@ def netcdf_14():
     if scale != 0.01 or offset != 1.5:
         gdaltest.post_reason( 'Incorrect scale(%f) or offset(%f)' % ( scale, offset ) )
         return 'fail'
-    
+
     ds = None
 
     ds = gdal.Open( 'NETCDF:data/two_vars_scale_offset.nc:q' )
@@ -629,7 +629,7 @@ def netcdf_15():
         return 'skip'
 
     return 'success'
-        
+
 ###############################################################################
 #check support for netcdf-4
 def netcdf_16():
@@ -638,7 +638,7 @@ def netcdf_16():
         return 'skip'
 
     ifile = 'data/trmm-nc4.nc'
-                
+
     if gdaltest.netcdf_drv_has_nc4:
 
         # test with Open()
@@ -678,7 +678,7 @@ def netcdf_17():
     if gdal.GetDriverByName( 'HDF5' ) is None and \
             gdal.GetDriverByName( 'HDF5Image' ) is None:
         return 'skip'
-    
+
     if gdaltest.netcdf_drv_has_nc4:
 
         #test with Open()
@@ -702,7 +702,7 @@ def netcdf_17():
 
     else:
         return 'skip'
-    
+
     return 'success'
 
 ###############################################################################
@@ -713,7 +713,7 @@ def netcdf_18():
         return 'skip'
 
     ifile = 'data/trmm-nc4c.nc'
-                
+
     if gdaltest.netcdf_drv_has_nc4:
 
         # test with Open()
@@ -797,8 +797,8 @@ def netcdf_21():
         #create large gtiff
         if test_cli_utilities.get_gdalwarp_path() is None:
             gdaltest.post_reason('gdalwarp not found')
-            return 'fail'
-    
+            return 'skip'
+
         warp_cmd = test_cli_utilities.get_gdalwarp_path() +\
             ' -q -overwrite -r bilinear -ts 7680 7680 -of gtiff ' +\
             'data/utm.tif ' + bigfile
@@ -808,14 +808,14 @@ def netcdf_21():
         except:
             gdaltest.post_reason('gdalwarp execution failed')
             return 'fail'
-        
+
         if ( err != '' or ret != '' ):
             gdaltest.post_reason('gdalwarp returned error\n'+str(ret)+' '+str(err))
             return 'fail'
 
     # test compression of the file, with a conservative timeout of 60 seconds
     return netcdf_test_deflate( bigfile, 26695, 6, 60 )
-     
+
 
 ###############################################################################
 #check support for hdf4
@@ -877,7 +877,7 @@ def netcdf_23():
     if name == 'netCDF':
         gdaltest.post_reason('netcdf driver was identified for hdf4 file')
         return 'fail'
-    
+
     return 'success'
 
 ###############################################################################
@@ -915,7 +915,7 @@ def netcdf_25():
                       'valid_range_s' : '0,255' }
 
     return netcdf_check_vars( 'tmp/netcdf_25.nc', vals_global, vals_band )
- 
+
 ###############################################################################
 # check support for WRITE_BOTTOMUP file creation option
 # use a dummy file with no lon/lat info to force a different checksum 
@@ -943,9 +943,9 @@ def netcdf_26():
     if result != 'success':
         print('failed create copy with WRITE_BOTTOMUP=NO')
         return result
-    
+
     return 'success'
- 
+
 ###############################################################################
 # check support for GDAL_NETCDF_BOTTOMUP configuration option
 def netcdf_27():
@@ -974,7 +974,7 @@ def netcdf_27():
     if result != 'success':
         print('failed open with GDAL_NETCDF_BOTTOMUP')
         return result
-    
+
     return 'success'
 
 ###############################################################################
@@ -1028,7 +1028,7 @@ def netcdf_test_4dfile( ofile ):
     if err != '':
         gdaltest.post_reason( err )
         return 'fail'
-         
+
     return 'success'
 
 ###############################################################################
@@ -1048,7 +1048,7 @@ def netcdf_28():
 
     # test file
     return netcdf_test_4dfile( ofile )
-    
+
 ###############################################################################
 # Check support for writing multi-dimensional files using gdalwarp.
 # Requires metadata copy support in gdalwarp (see bug #3898).
@@ -1062,14 +1062,14 @@ def netcdf_29():
     if gdaltest.netcdf_drv is None:
         return 'skip'
 
-    ifile = 'data/netcdf-4d.nc'
-    ofile1 = 'tmp/netcdf_29.vrt'
-    ofile = 'tmp/netcdf_29.nc'
-
     # create tif file using gdalwarp
     if test_cli_utilities.get_gdalwarp_path() is None:
         gdaltest.post_reason('gdalwarp not found')
-        return 'fail'
+        return 'skip'
+
+    ifile = 'data/netcdf-4d.nc'
+    ofile1 = 'tmp/netcdf_29.vrt'
+    ofile = 'tmp/netcdf_29.nc'
 
     warp_cmd = '%s -q -overwrite -of vrt %s %s' %\
         ( test_cli_utilities.get_gdalwarp_path(), ifile, ofile1 )
@@ -1078,7 +1078,7 @@ def netcdf_29():
     except:
         gdaltest.post_reason('gdalwarp execution failed')
         return 'fail'
-        
+
     if ( err != '' or ret != '' ):
         gdaltest.post_reason('gdalwarp returned error\n'+str(ret)+' '+str(err))
         return 'fail'
@@ -1422,17 +1422,121 @@ def netcdf_39():
         gdaltest.post_reason('failure')
         print(cs)
         return 'fail'
-        
+
     return 'success'
 
 ###############################################################################
-# check support of reading of chuncked bottom-up files
+# Check support of reading of chunked bottom-up files.
+
 def netcdf_40():
 
     if gdaltest.netcdf_drv is None or not gdaltest.netcdf_drv_has_nc4:
         return 'skip'
 
     return netcdf_test_copy( 'data/bug5291.nc', 0, None, 'tmp/netcdf_40.nc' )
+
+###############################################################################
+# Test support for georeferenced file without CF convention
+
+def netcdf_41():
+
+    if gdaltest.netcdf_drv is None:
+        return 'skip'
+
+    with gdaltest.error_handler():
+        ds = gdal.Open('data/byte_no_cf.nc')
+    if ds.GetGeoTransform() != (440720, 60, 0, 3751320, 0, -60):
+        gdaltest.post_reason('failure')
+        print(ds.GetGeoTransform())
+        return 'fail'
+    if ds.GetProjectionRef().find('26711') < 0:
+        gdaltest.post_reason('failure')
+        print(ds.GetGeoTransform())
+        return 'fail'
+
+    return 'success'
+
+###############################################################################
+# Test writing & reading GEOLOCATION array
+
+def netcdf_42():
+
+    if gdaltest.netcdf_drv is None:
+        return 'skip'
+
+    src_ds = gdal.GetDriverByName('MEM').Create('', 60, 39, 1)
+    src_ds.SetMetadata( [
+  'LINE_OFFSET=0',
+  'LINE_STEP=1',
+  'PIXEL_OFFSET=0',
+  'PIXEL_STEP=1',
+  'SRS=GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],TOWGS84[0,0,0,0,0,0,0],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9108"]],AXIS["Lat",NORTH],AXIS["Long",EAST],AUTHORITY["EPSG","4326"]]',
+  'X_BAND=1',
+  'X_DATASET=../gcore/data/sstgeo.tif',
+  'Y_BAND=2',
+  'Y_DATASET=../gcore/data/sstgeo.tif'], 'GEOLOCATION' )
+    sr = osr.SpatialReference()
+    sr.ImportFromEPSG(32631)
+    src_ds.SetProjection(sr.ExportToWkt())
+
+    gdaltest.netcdf_drv.CreateCopy('tmp/netcdf_42.nc', src_ds)
+
+    ds = gdal.Open('tmp/netcdf_42.nc')
+    if ds.GetMetadata('GEOLOCATION') != {
+        'LINE_OFFSET': '0',
+        'X_DATASET': 'NETCDF:"tmp/netcdf_42.nc":lon',
+        'PIXEL_STEP': '1',
+        'SRS': 'GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]',
+        'PIXEL_OFFSET': '0',
+        'X_BAND': '1',
+        'LINE_STEP': '1',
+        'Y_DATASET': 'NETCDF:"tmp/netcdf_42.nc":lat',
+        'Y_BAND': '1'}:
+        gdaltest.post_reason('failure')
+        print(ds.GetMetadata('GEOLOCATION'))
+        return 'fail'
+
+    ds = gdal.Open('NETCDF:"tmp/netcdf_42.nc":lon')
+    if ds.GetRasterBand(1).Checksum() != 36043:
+        gdaltest.post_reason('failure')
+        print(ds.GetRasterBand(1).Checksum())
+        return 'fail'
+
+    ds = gdal.Open('NETCDF:"tmp/netcdf_42.nc":lat')
+    if ds.GetRasterBand(1).Checksum() != 33501:
+        gdaltest.post_reason('failure')
+        print(ds.GetRasterBand(1).Checksum())
+        return 'fail'
+
+    return 'success'
+
+###############################################################################
+# Test reading GEOLOCATION array from geotransform (non default)
+
+def netcdf_43():
+
+    if gdaltest.netcdf_drv is None:
+        return 'skip'
+
+    src_ds = gdal.Open('data/byte.tif')
+    gdaltest.netcdf_drv.CreateCopy('tmp/netcdf_43.nc', src_ds, options = ['WRITE_LONLAT=YES'] )
+
+    ds = gdal.Open('tmp/netcdf_43.nc')
+    if ds.GetMetadata('GEOLOCATION') != {
+        'LINE_OFFSET': '0',
+        'X_DATASET': 'NETCDF:"tmp/netcdf_43.nc":lon',
+        'PIXEL_STEP': '1',
+        'SRS': 'GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]',
+        'PIXEL_OFFSET': '0',
+        'X_BAND': '1',
+        'LINE_STEP': '1',
+        'Y_DATASET': 'NETCDF:"tmp/netcdf_43.nc":lat',
+        'Y_BAND': '1'}:
+        gdaltest.post_reason('failure')
+        print(ds.GetMetadata('GEOLOCATION'))
+        return 'fail'
+
+    return 'success'
 
 ###############################################################################
 
@@ -1479,7 +1583,10 @@ gdaltest_list = [
     netcdf_37,
     netcdf_38,
     netcdf_39,
-    netcdf_40
+    netcdf_40,
+    netcdf_41,
+    netcdf_42,
+    netcdf_43,
  ]
 
 ###############################################################################

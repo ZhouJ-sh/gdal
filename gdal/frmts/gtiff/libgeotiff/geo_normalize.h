@@ -95,8 +95,8 @@ typedef struct {
     /** The length of the semi minor ellipse axis in meters. */
     double	SemiMinor;
 
-  /* this #if is primary intended to maintain binary compatability with older
-     versions of libgeotiff for MrSID binaries (for example) */
+  /* This #if is primary intended to maintain binary compatibility with older
+     versions of libgeotiff for MrSID binaries (for example). */
 #if !defined(GEO_NORMALIZE_DISABLE_TOWGS84)
     /** TOWGS84 transformation values (0/3/7) */
     short       TOWGS84Count;
@@ -113,7 +113,7 @@ typedef struct {
     short	Projection;
 
     /** GeoTIFF identifier for underlying projection method.  While some of
-      these values have corresponding vlaues in EPSG (Projection field),
+      these values have corresponding values in EPSG (Projection field),
       others do not.  For example CT_TransverseMercator. */
     short	CTProjection;   
 

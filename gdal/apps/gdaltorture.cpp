@@ -119,7 +119,6 @@ static void TortureBand(GDALRasterBandH hBand, int bReadWriteOperations, int nRe
         TortureBand(hMaskBand, FALSE, nRecurse + 1);
     GDALGetMaskFlags(hBand);
     //GDALCreateMaskBand
-    
 }
 
 /************************************************************************/
@@ -172,7 +171,7 @@ static void TortureDS(const char *pszTarget, int bReadWriteOperations)
     // GDALFlushCache
     // GDALCreateDatasetMaskBand
     // GDALDatasetCopyWholeRaster
-    
+
     for(iBand=0;iBand<nBands;iBand++)
     {
         hBand = GDALGetRasterBand(hDS, iBand + 1);
@@ -208,7 +207,7 @@ static void ProcessTortureTarget( const char *pszTarget,
         TortureDS(pszTarget, bReadWriteOperations);
     }
     else if( bReportFailures )
-        printf( "%s: unrecognised\n", pszTarget );
+        printf( "%s: unrecognized\n", pszTarget );
 
     if( !bRecursive || hDriver != NULL )
         return;

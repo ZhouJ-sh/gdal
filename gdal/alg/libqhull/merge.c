@@ -115,9 +115,9 @@ void qh_premerge(vertexT *apex, realT maxcentrum, realT maxangle) {
       set qh.visible_list and qh.newfacet_list to qh.facet_list
       add all facets to qh.newfacet_list
       mark non-simplicial facets, facet->newmerge
-      set qh.newvertext_list to qh.vertex_list
+      set qh.newvertex_list to qh.vertex_list
       add all vertices to qh.newvertex_list
-      if a pre-merge occured
+      if a pre-merge occurred
         set vertex->delridge {will retest the ridge}
         if qh.MERGEexact
           call qh_reducevertices()
@@ -528,7 +528,7 @@ boolT qh_checkzero(boolT testall) {
           goto LABELnonconvex;
       }
     }
-    if (!testall) {
+    if (horizon != NULL && !testall) {
       FOREACHvertex_(horizon->vertices) {
         if (vertex->visitid != qh vertex_visit) {
           zzinc_(Zdistzero);
@@ -2986,7 +2986,7 @@ boolT qh_reducevertices(void) {
   design:
     intersect vertices of all facet neighbors of vertex
     determine ridges for these vertices
-    if find a new vertex for vertex amoung these ridges and vertices
+    if find a new vertex for vertex among these ridges and vertices
       rename vertex to the new vertex
 */
 vertexT *qh_redundant_vertex(vertexT *vertex) {
@@ -3017,7 +3017,7 @@ vertexT *qh_redundant_vertex(vertexT *vertex) {
     for each vertex in facet
       if vertex not in a ridge (i.e., no longer used)
         delete vertex from facet
-        delete facet from vertice's neighbors
+        delete facet from vertex's neighbors
         unless vertex in another facet
           add vertex to qh.del_vertices for later deletion
 */
@@ -3155,9 +3155,9 @@ void qh_renameridgevertex(ridgeT *ridge, vertexT *oldvertex, vertexT *newvertex)
       zinc_(Zdelridge);
       if (ridge->nonconvex) /* only one ridge has nonconvex set */
         qh_copynonconvex(ridge);
-      qh_delridge(ridge);
       trace2((qh ferr, 2038, "qh_renameridgevertex: ridge r%d deleted.  It contained both v%d and v%d\n",
         ridge->id, oldvertex->id, newvertex->id));
+      qh_delridge(ridge);
       return;
     }
     if (vertex->id < newvertex->id)
@@ -3530,7 +3530,7 @@ void qh_updatetested(facetT *facet1, facetT *facet2) {
     return temporary set of ridges adjacent to a vertex
     vertex->neighbors defined
 
-  ntoes:
+  notes:
     uses qh.visit_id
     does not include implicit ridges for simplicial facets
 

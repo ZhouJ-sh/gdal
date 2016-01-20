@@ -160,7 +160,7 @@ def ogr_openfilegdb_make_test_data():
         feat = ogr.Feature(lyr.GetLayerDefn())
         feat.SetField('str', 'fid2')
         lyr.CreateFeature(feat)
-        
+
         feat = ogr.Feature(lyr.GetLayerDefn())
         feat.SetField('str', 'fid3')
         lyr.CreateFeature(feat)
@@ -181,11 +181,11 @@ def ogr_openfilegdb_make_test_data():
             lyr.CreateField(ogr.FieldDefn('int%d' % (i+1), ogr.OFTInteger))
 
         lyr.DeleteFeature(1)
-        
+
         feat = ogr.Feature(lyr.GetLayerDefn())
         lyr.CreateFeature(feat)
         feat = None
-        
+
         feat = ogr.Feature(lyr.GetLayerDefn())
         feat.SetField('str', 'fid13')
         lyr.CreateFeature(feat)
@@ -420,7 +420,7 @@ def ogr_openfilegdb_3():
 # Test use of attribute indexes
 
 def ogr_openfilegdb_4():
-    
+
     ds = ogr.Open('/vsizip/data/testopenfilegdb.gdb.zip/testopenfilegdb.gdb')
 
     lyr = ds.GetLayerByName('point')
@@ -670,6 +670,8 @@ def ogr_openfilegdb_5():
 def ogr_openfilegdb_6():
 
     ds = ogr.Open('data/testopenfilegdb.gdb.zip')
+
+    # With indices
     sql_lyr = ds.ExecuteSQL("select min(id), max(id), count(id), sum(id), avg(id), min(str), min(smallint), " \
                             "avg(smallint), min(float), avg(float), min(real), avg(real), min(adate), avg(adate), min(guid), min(nullint), avg(nullint) from point")
     if sql_lyr is None:
@@ -695,8 +697,18 @@ def ogr_openfilegdb_6():
         feat.DumpReadable()
         ds.ReleaseResultSet(sql_lyr)
         return 'fail'
-
     ds.ReleaseResultSet(sql_lyr)
+
+    # No index
+    sql_lyr = ds.ExecuteSQL("select min(id),  avg(id) from multipoint")
+    feat = sql_lyr.GetNextFeature()
+    if feat.GetField('MIN_id') != 1 or \
+       feat.GetField('AVG_id') != 3.0:
+        feat.DumpReadable()
+        ds.ReleaseResultSet(sql_lyr)
+        return 'fail'
+    ds.ReleaseResultSet(sql_lyr)
+
     return 'success'
 
 ###############################################################################
@@ -705,7 +717,7 @@ def ogr_openfilegdb_6():
 def ogr_openfilegdb_7():
 
     ds = ogr.Open('data/testopenfilegdb.gdb.zip')
-    
+
     tests = [ # Optimized:
               ( "select * from point order by id", 5, 1, 1),
               ( "select id, str from point order by id desc", 5, 5, 1),
@@ -830,7 +842,7 @@ def ogr_openfilegdb_9():
         os.stat('tmp/testopenfilegdb.gdb')
     except:
         return 'skip'
- 
+
     shutil.copy('tmp/testopenfilegdb.gdb/a00000009.gdbtable', 'tmp/a00000009.gdbtable')
     shutil.copy('tmp/testopenfilegdb.gdb/a00000009.gdbtablx', 'tmp/a00000009.gdbtablx')
     ds = ogr.Open('tmp/a00000009.gdbtable')
@@ -876,7 +888,7 @@ def ogr_openfilegdb_10():
         os.stat('tmp/testopenfilegdb.gdb')
     except:
         return 'skip'
- 
+
     shutil.copytree('tmp/testopenfilegdb.gdb', 'tmp/testopenfilegdb_fuzzed.gdb')
 
     if False:
@@ -1084,7 +1096,7 @@ def ogr_openfilegdb_11():
     feat = None
     lyr = None
     ds = None
-    
+
     # Test GetFeatureCount() without spatial index already built, with no matching feature
     # when GEOS is available
     if ogrtest.have_geos():

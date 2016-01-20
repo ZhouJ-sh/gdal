@@ -43,7 +43,7 @@ import gdaltest
 from osgeo import gdal, osr
 
 ###############################################################################
-# This test verifies that morphToESRI() translates ideosyncratic datum names
+# This test verifies that morphToESRI() translates idiosyncratic datum names
 # from "EPSG" form to ESRI from when the exception list comes from the
 # gdal_datum.csv file.
 
@@ -358,7 +358,7 @@ def osr_esri_11():
                           '0.0 /* false easting (meters)',
                           '0.0 /* false northing (meters)' ] )
 
-    expected = 'PROJCS["unnamed",GEOGCS["NAD27",DATUM["North_American_Datum_1927",SPHEROID["Clarke 1866",6378206.4,294.978698213898,AUTHORITY["EPSG","7008"]],AUTHORITY["EPSG","6267"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9108"]],AUTHORITY["EPSG","4267"]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",39.55833333333333],PARAMETER["central_meridian",-106.9334722222222],PARAMETER["scale_factor",1],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["METERS",1]]'
+    expected = 'PROJCS["unnamed",GEOGCS["NAD27",DATUM["North_American_Datum_1927",SPHEROID["Clarke 1866",6378206.4,294.9786982138982,AUTHORITY["EPSG","7008"]],AUTHORITY["EPSG","6267"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4267"]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",39.55833333333333],PARAMETER["central_meridian",-106.9334722222222],PARAMETER["scale_factor",1],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["METERS",1]]'
 
     srs.MorphFromESRI()
     wkt = srs.ExportToWkt()
@@ -501,7 +501,7 @@ def osr_esri_15():
     return 'success'
 
 ###############################################################################
-# Verify translation of equirectngular to equidistant cylindrical with
+# Verify translation of equirectangular to equidistant cylindrical with
 # cleanup of parameters.
 
 def osr_esri_16():
@@ -633,7 +633,7 @@ def osr_esri_19():
 
 ###############################################################################
 # Test esri->ogc, esri->proj / ogc->esri, ogc->proj / proj->esri, proj->ogc
-def osr_ersi_test( wkt_esri, wkt_ogc, proj4 ):
+def osr_esri_test( wkt_esri, wkt_ogc, proj4 ):
 
     silent = True
     #silent = False
@@ -727,27 +727,27 @@ def osr_esri_20():
     stere_ogc='PROJCS["World_Stereographic",GEOGCS["GCS_WGS_1984",DATUM["WGS_84",SPHEROID["WGS_84",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Stereographic"],PARAMETER["False_Easting",0.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",0.0],PARAMETER["Scale_Factor",1.0],PARAMETER["Latitude_Of_Origin",0.0],UNIT["Meter",1.0]]'
     stere_proj4='+proj=stere +lat_0=0 +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs '
     #result1 = 'success'
-    result1 = osr_ersi_test(stere_esri, stere_ogc, stere_proj4)
+    result1 = osr_esri_test(stere_esri, stere_ogc, stere_proj4)
 
     # Double_Stereographic / Oblique_Stereographic / +proj=sterea +lat_0=46 +lon_0=25 ...
     #modified definitions from ESRI 'Stereo 1970.prj'
     sterea_esri='PROJCS["Stereo_70",GEOGCS["GCS_Dealul_Piscului_1970",DATUM["D_Dealul_Piscului_1970",SPHEROID["Krasovsky_1940",6378245.0,298.3]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Double_Stereographic"],PARAMETER["False_Easting",500000.0],PARAMETER["False_Northing",500000.0],PARAMETER["Central_Meridian",25.0],PARAMETER["Scale_Factor",0.99975],PARAMETER["Latitude_Of_Origin",46.0],UNIT["Meter",1.0]]'
     sterea_ogc='PROJCS["Stereo_70",GEOGCS["GCS_Dealul_Piscului_1970",DATUM["Dealul_Piscului_1970",SPHEROID["Krasovsky_1940",6378245.0,298.3]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Oblique_Stereographic"],PARAMETER["False_Easting",500000.0],PARAMETER["False_Northing",500000.0],PARAMETER["Central_Meridian",25.0],PARAMETER["Scale_Factor",0.99975],PARAMETER["Latitude_Of_Origin",46.0],UNIT["Meter",1.0]]'
     sterea_proj4='+proj=sterea +lat_0=46 +lon_0=25 +k=0.99975 +x_0=500000 +y_0=500000 +ellps=krass +units=m +no_defs '
-    result2 = osr_ersi_test(sterea_esri, sterea_ogc, sterea_proj4)
+    result2 = osr_esri_test(sterea_esri, sterea_ogc, sterea_proj4)
 
     # Stereographic_North_Pole / Polar_Stereographic / +proj=stere +lat_0=90 +lat_ts=70 ...
     #modified definitions from ESRI 'WGS 1984 NSIDC Sea Ice Polar Stereographic North.prj'
     sterep_esri='PROJCS["WGS_1984_NSIDC_Sea_Ice_Polar_Stereographic_North",GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Stereographic_North_Pole"],PARAMETER["False_Easting",0.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",-45.0],PARAMETER["Standard_Parallel_1",70.0],UNIT["Meter",1.0]]'
     sterep_ogc='PROJCS["WGS_1984_NSIDC_Sea_Ice_Polar_Stereographic_North",GEOGCS["GCS_WGS_1984",DATUM["WGS_1984",SPHEROID["WGS_84",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Polar_Stereographic"],PARAMETER["False_Easting",0.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",-45.0],PARAMETER["latitude_of_origin",70.0],UNIT["Meter",1.0]]'
     sterep_proj4='+proj=stere +lat_0=90 +lat_ts=70 +lon_0=-45 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs '
-    result3 = osr_ersi_test(sterep_esri, sterep_ogc, sterep_proj4)
+    result3 = osr_esri_test(sterep_esri, sterep_ogc, sterep_proj4)
 
     # Orthographic (#4249)
     ortho_esri='PROJCS["unnamed",GEOGCS["GCS_WGS_1984",DATUM["unknown",SPHEROID["WGS84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Orthographic"],PARAMETER["Latitude_Of_Center",-37],PARAMETER["Longitude_Of_Center",145],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["Meter",1]]'
     ortho_ogc='PROJCS["unnamed",GEOGCS["WGS 84",DATUM["unknown",SPHEROID["WGS84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Orthographic"],PARAMETER["latitude_of_origin",-37],PARAMETER["central_meridian",145],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["Meter",1]]'
     ortho_proj4='+proj=ortho +lat_0=-37 +lon_0=145 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs '
-    result4 = osr_ersi_test(ortho_esri, ortho_ogc, ortho_proj4)
+    result4 = osr_esri_test(ortho_esri, ortho_ogc, ortho_proj4)
 
     if ( result1 != 'success' or result2 != 'success' or result3 != 'success' or result4 != 'success'):
         result = 'fail'
@@ -759,7 +759,7 @@ def osr_esri_20():
 # Test round-trip WKT ESRI->OGC->ESRI
 #
 # data from bug #4345 and ESRI pages below
-# ifile must be in csv format (; seperator) with the following header:
+# ifile must be in CSV format (; separator) with the following header:
 # COORD_REF_SYS_CODE;ESRI_DATUM_NAME;WKT
 # http://help.arcgis.com/en/arcims/10.0/mainhelp/mergedProjects/ArcXMLGuide/elements/gcs.htm
 # http://help.arcgis.com/en/arcims/10.0/mainhelp/mergedProjects/ArcXMLGuide/elements/pcs.htm
@@ -781,7 +781,7 @@ def osr_esri_test_esri_ogc_esri( ifile, ofile_base, fix_config='NO', check_epsg=
     ofile_srs = 'tmp/'+ofile_base+'_srs.txt'
     ofile_wkt = 'tmp/'+ofile_base+'_wkt.txt'
 
-    #initialise output files
+    # Initialize output files.
     if not os.path.exists('tmp'):
         os.mkdir('tmp')
     if os.path.exists(ofile_epsg):
@@ -964,7 +964,7 @@ def osr_esri_test_ogc_esri_ogc( ifile, ofile_base, fix_config='NO', check_epsg=F
     ofile_srs = 'tmp/'+ofile_base+'_srs.txt'
     ofile_wkt = 'tmp/'+ofile_base+'_wkt.txt'
 
-    #initialise output files
+    # Initialize output files.
     if not os.path.exists('tmp'):
         os.mkdir('tmp')
     if os.path.exists(ofile_epsg):
@@ -1220,7 +1220,7 @@ def osr_esri_26():
 ###############################################################################
 # Test Mercator_2SP (#4861)
 def osr_esri_27():
-    
+
     esri_wkt = """PROJCS["Batavia_NEIEZ",
     GEOGCS["GCS_Batavia",
         DATUM["D_Batavia",
@@ -1237,7 +1237,7 @@ def osr_esri_27():
     srs = osr.SpatialReference()
     srs.SetFromUserInput(esri_wkt)
     srs.MorphFromESRI()
-    
+
     got_wkt = srs.ExportToPrettyWkt()
     if got_wkt != """PROJCS["Batavia_NEIEZ",
     GEOGCS["GCS_Batavia",
@@ -1254,7 +1254,7 @@ def osr_esri_27():
         gdaltest.post_reason('fail')
         print(got_wkt)
         return 'fail'
-        
+
     srs.MorphToESRI()
     got_wkt = srs.ExportToPrettyWkt()
     if got_wkt != """PROJCS["Batavia_NEIEZ",
@@ -1280,7 +1280,7 @@ def osr_esri_27():
 # Test Mercator_1SP (#4861)
 
 def osr_esri_28():
-    
+
     ogc_wkt = """PROJCS["Segara (Jakarta) / NEIEZ (deprecated)",
     GEOGCS["Segara (Jakarta)",
         DATUM["Gunung_Segara_Jakarta",
@@ -1303,7 +1303,7 @@ def osr_esri_28():
     AXIS["X",EAST],
     AXIS["Y",NORTH],
     AUTHORITY["EPSG","2934"]]"""
-    
+
     srs = osr.SpatialReference()
     srs.SetFromUserInput(ogc_wkt)
 
@@ -1347,6 +1347,93 @@ def osr_esri_28():
     return 'success'
 
 ###############################################################################
+# Test Web Mercator
+
+def osr_esri_29():
+
+    srs = osr.SpatialReference()
+    srs.ImportFromEPSG(3857)
+
+    srs.MorphToESRI()
+    got_wkt = srs.ExportToPrettyWkt()
+    if got_wkt != """PROJCS["WGS_1984_Web_Mercator_Auxiliary_Sphere",
+    GEOGCS["GCS_WGS_1984",
+        DATUM["D_WGS_1984",
+            SPHEROID["WGS_1984",6378137.0,298.257223563]],
+        PRIMEM["Greenwich",0.0],
+        UNIT["Degree",0.0174532925199433]],
+    PROJECTION["Mercator_Auxiliary_Sphere"],
+    PARAMETER["False_Easting",0.0],
+    PARAMETER["False_Northing",0.0],
+    PARAMETER["Central_Meridian",0.0],
+    PARAMETER["Standard_Parallel_1",0.0],
+    PARAMETER["Auxiliary_Sphere_Type",0.0],
+    UNIT["Meter",1.0]]""":
+        gdaltest.post_reason('fail')
+        print(got_wkt)
+        return 'fail'
+
+    srs.MorphFromESRI()
+    got_wkt = srs.ExportToPrettyWkt()
+    if got_wkt != """PROJCS["WGS 84 / Pseudo-Mercator",
+    GEOGCS["WGS 84",
+        DATUM["WGS_1984",
+            SPHEROID["WGS 84",6378137,298.257223563,
+                AUTHORITY["EPSG","7030"]],
+            AUTHORITY["EPSG","6326"]],
+        PRIMEM["Greenwich",0,
+            AUTHORITY["EPSG","8901"]],
+        UNIT["degree",0.0174532925199433,
+            AUTHORITY["EPSG","9122"]],
+        AUTHORITY["EPSG","4326"]],
+    PROJECTION["Mercator_1SP"],
+    PARAMETER["central_meridian",0],
+    PARAMETER["scale_factor",1],
+    PARAMETER["false_easting",0],
+    PARAMETER["false_northing",0],
+    UNIT["metre",1,
+        AUTHORITY["EPSG","9001"]],
+    AXIS["X",EAST],
+    AXIS["Y",NORTH],
+    EXTENSION["PROJ4","+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs"],
+    AUTHORITY["EPSG","3857"]]""":
+        gdaltest.post_reason('fail')
+        print(got_wkt)
+        return 'fail'
+
+    # 6134
+    srs.SetFromUserInput("""PROJCS["WGS_84_Pseudo_Mercator",GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Mercator"],PARAMETER["central_meridian",0],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["Meter",1],PARAMETER["standard_parallel_1",0.0]]""")
+    srs.MorphFromESRI()
+    got_wkt = srs.ExportToPrettyWkt()
+    if got_wkt != """PROJCS["WGS 84 / Pseudo-Mercator",
+    GEOGCS["WGS 84",
+        DATUM["WGS_1984",
+            SPHEROID["WGS 84",6378137,298.257223563,
+                AUTHORITY["EPSG","7030"]],
+            AUTHORITY["EPSG","6326"]],
+        PRIMEM["Greenwich",0,
+            AUTHORITY["EPSG","8901"]],
+        UNIT["degree",0.0174532925199433,
+            AUTHORITY["EPSG","9122"]],
+        AUTHORITY["EPSG","4326"]],
+    PROJECTION["Mercator_1SP"],
+    PARAMETER["central_meridian",0],
+    PARAMETER["scale_factor",1],
+    PARAMETER["false_easting",0],
+    PARAMETER["false_northing",0],
+    UNIT["metre",1,
+        AUTHORITY["EPSG","9001"]],
+    AXIS["X",EAST],
+    AXIS["Y",NORTH],
+    EXTENSION["PROJ4","+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs"],
+    AUTHORITY["EPSG","3857"]]""":
+        gdaltest.post_reason('fail')
+        print(got_wkt)
+        return 'fail'
+
+    return 'success'
+
+###############################################################################
 #
 
 gdaltest_list = [
@@ -1378,7 +1465,10 @@ gdaltest_list = [
     osr_esri_26,
     osr_esri_27,
     osr_esri_28,
+    osr_esri_29,
    None ]
+
+#gdaltest_list = [osr_esri_29]
 
 if __name__ == '__main__':
 

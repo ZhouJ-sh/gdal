@@ -30,8 +30,8 @@ same format as the band data.
 
 <p>By default, the datatype returned for AAIGRID datasets by GDAL is autodetected,
 and set to Float32 for grid with floating point values or Int32 otherwise. This is
-done by analysing the format of the NODATA value and the first 100k bytes of data of the
-grid. From GDAL 1.8.0, you can explictely specify the datatype by setting the
+done by analysing the format of the NODATA value and, if needed, the data of the
+grid. From GDAL 1.8.0, you can explicitly specify the datatype by setting the
 AAIGRID_DATATYPE configuration option (Int32, Float32 and Float64 values are
 supported currently)</p>
 
@@ -61,9 +61,10 @@ for Arc/Info Binary Grid format.</p>
 
 <p>(GDAL >= 1.9.0)</p>
 
-<p>This is a conveniency driver to read ACE2 DEMs. Those files contain raw binary data. The
-georeferencing is entirely determined by the filename. Quality, source and confidence
-layers are of Int16 type, whereas elevation data is returned as Float32.</p>
+<p>This is a convenience driver to read ACE2 DEMs. Those files contain
+raw binary data. The georeferencing is entirely determined by the
+filename. Quality, source and confidence layers are of Int16 type,
+whereas elevation data is returned as Float32.</p>
 
 <p><a href="http://tethys.eaprs.cse.dmu.ac.uk/ACE2/shared/overview">ACE2 product overview</a></p>
 
@@ -152,7 +153,7 @@ driver includes support for reading and writing .bt 1.3 format including
 support for Int16, Int32 and Float32 pixel data types.</p>
 
 <p>The driver does
-<b>not</b> support reading or writting gzipped (.bt.gz) .bt files even
+<b>not</b> support reading or writing gzipped (.bt.gz) .bt files even
 though this is supported by the VTP software.  Please unpack the files
 before using with GDAL using the "gzip -d file.bt.gz".</p>
 
@@ -330,7 +331,7 @@ USGS DOQ Standards</a></p>
 often referred to as ESRI BIL format.  Eight, sixteen
 and thirty-two bit integer raster data types are supported as well as 32
 bit floating point.  Coordinate systems (from a .prj file), and georeferencing
-are supported.  Unrecognised options in the .hdr file are ignored.  To 
+are supported.  Unrecognized options in the .hdr file are ignored.  To
 open a dataset select the file with the image file (often with the extension
 .bil).  If present .clr color table files are read, but not written. If present,
 image.rep file will be read to extract the projection system of SpatioCarte Defense 1.0 raster products.</p>
@@ -378,13 +379,14 @@ Starting with GDAL 1.9.0
 that uses the table of content file, TOC.xml, and exposes it as a virtual dataset whose
 coverage is the set of ECRG frames contained in the table of content.</p>
 <p>The driver will report a different subdataset for each subdataset found in the TOC.xml
-file.</p>
+file. Each subdataset consists of the frames of same product id, disk id, and starting
+with GDAL 1.11.3, with same scale.</p>
 
 <p>Result of a gdalinfo on a TOC.xml file.</p>
 <pre>
 Subdatasets:
-  SUBDATASET_1_NAME=ECRG_TOC_ENTRY:ECRG:FalconView:ECRG_Sample/EPF/TOC.xml
-  SUBDATASET_1_DESC=ECRG:FalconView
+  SUBDATASET_1_NAME=ECRG_TOC_ENTRY:ECRG:FalconView:1_500_K:ECRG_Sample/EPF/TOC.xml
+  SUBDATASET_1_DESC=Product ECRG, Disk FalconView, Scale 1:500 K
 </pre>
 
 <p>See Also:</p>
@@ -437,7 +439,7 @@ ENVI metadata domain, and all of these can then be written out to the header fil
 <ul>
 
 	<li> <b>INTERLEAVE=BSQ/BIP/BIL</b>: Force the generation specified
-	type of interleaving. <b>BSQ</b> --- band sequental (default),
+	type of interleaving. <b>BSQ</b> --- band sequential (default),
 	<b>BIP</b> --- data interleaved by pixel,
 	<b>BIL</b> --- data interleaved by line.</li>
 	
@@ -542,7 +544,7 @@ when provided. </p>
 <p>By default, the datatype returned for GRASS ASCII grid datasets by GDAL is autodetected,
 and set to Float32 for grid with floating point values or Int32 otherwise. This is
 done by analysing the format of the null value and the first 100k bytes of data of the
-grid. You can also explictely specify the datatype by setting the
+grid. You can also explicitly specify the datatype by setting the
 GRASSASCIIGRID_DATATYPE configuration option (Int32, Float32 and Float64 values are
 supported currently)</p>
 
@@ -612,7 +614,7 @@ of 8bit data.  IDA files often have the extension .img though that is not
 required.</p>
 
 <p>Projection and georeferencing information is read though some projections
-(ie. Meteosat, and Hammer-Aitoff) are not supported.  When writing IDA files
+(i.e. Meteosat, and Hammer-Aitoff) are not supported.  When writing IDA files
 the projection must have a false easting and false northing of zero. The 
 support coordinate systems in IDA are Geographic, Lambert Conformal Conic,
 Lambert Azimuth Equal Area, Albers Equal-Area Conic and Goodes Homolosine.</p>
@@ -732,7 +734,7 @@ Erdas 7.x .LAN and .GIS raster files.  Currently
 and 8bit and 16bit for writing.  </p>
 
 <p>GDAL does read the map extents (geotransform) from LAN/GIS files, and 
-attempts to read the coordinate system informaton.  However, this format
+attempts to read the coordinate system information.  However, this format
 of file does not include complete coordinate system information, so for
 state plane and UTM coordinate systems a LOCAL_CS definition is returned
 with valid linear units but no other meaningful information.</p>
@@ -756,9 +758,9 @@ and so on.   To open a dataset select the .hdr file.</p>
 <p>Reading lat/long GCPs (TOP_LEFT_CORNER, ...) is supported but there is no
 support for reading affine georeferencing or projection information.</p>
 
-<p>Unrecognised keywords from the .hdr file are preserved as metadata. </p>
+<p>Unrecognized keywords from the .hdr file are preserved as metadata.</p>
 
-<p>All data types with GDAL equivelents are supported, including 8, 16, 32 and
+<p>All data types with GDAL equivalents are supported, including 8, 16, 32 and
 64 bit data precisions in integer, real and complex data types.  In addition
 tile organized files (as produced by the Vexcel SAR Processor - APP) are
 supported for reading. </p>
@@ -848,7 +850,7 @@ Description</a></p>
 <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
 <h2><a name="PCRaster">PCRaster raster file format</a></h2>
-<p>GDAL includes support for reading and writing PCRaster raster files. PCRaster is a dynamic modelling system for distributed simulation models. The main applications of PCRaster are found in environmental modelling: geography, hydrology, ecology to name a few. Examples include models for research on global hydrology, vegetation competition models, slope stability models and land use change models.</p>
+<p>GDAL includes support for reading and writing PCRaster raster files. PCRaster is a dynamic modeling system for distributed simulation models. The main applications of PCRaster are found in environmental modeling: geography, hydrology, ecology to name a few. Examples include models for research on global hydrology, vegetation competition models, slope stability models and land use change models.</p>
 
 <p>The driver reads all types of PCRaster maps: booleans, nominal, ordinals, scalar, directional and ldd. The same cell representation used to store values in the file is used to store the values in memory.</p>
 
@@ -889,7 +891,7 @@ Description</a></p>
   </tbody>
 </table>
 
-<p>For rasters from other sources than a PCRaster raster file a value scale and cell representation is determined according to the folowing rules:</p>
+<p>For rasters from other sources than a PCRaster raster file a value scale and cell representation is determined according to the following rules:</p>
 
 <table>
   <thead>
@@ -970,7 +972,7 @@ are preserved when the color table is read. </p>
 <p>PNG files can be created with a type of PNG, using the CreateCopy() method, 
 requiring a prototype to read from.  Writing includes support for the
 various image types, and will preserve transparency/nodata values.  
-Georeferencing .wld files are written if option WORLDFILE setted.  All
+Georeferencing .wld files are written if option WORLDFILE is set.  All
 pixel types other than 16bit unsigned will be written as eight bit.</p>
 
 <p>Starting with GDAL 1.9.0, XMP metadata can be extracted from the file, and will be
@@ -1010,6 +1012,7 @@ of 9 is slow but does the best compression.</li>
 <li> <b>COPYRIGHT=value</b>: Copyright, written in a TEXT or iTXt chunk (GDAL &gt;= 2.0 )</li>
 <li> <b>COMMENT=value</b>: Comment, written in a TEXT or iTXt chunk (GDAL &gt;= 2.0 )</li>
 <li> <b>WRITE_METADATA_AS_TEXT=YES/NO</b>: Whether to write source dataset metadata in TEXT chunks (GDAL &gt;= 2.0 )</li>
+<li> <b>NBITS=1/2/4</b>: Force number of output bits (GDAL &gt;= 2.1 )</li>
 
 </ul>
 
@@ -1034,7 +1037,7 @@ http://www.libpng.org/pub/png</a>.</p>
 <ul>
 
 <li> <b>MAXVAL=n</b>: Force setting the maximum color value to <b>n</b>
-in the output PNM file. May be useful if you plannig use the output files with
+in the output PNM file. May be useful if you planning to use the output files with
 software which is not liberal to this value.</li>
 </ul>
 
@@ -1085,12 +1088,13 @@ Subdatasets:
 </pre>
 
 
-<p>In some situations, <a href="frmt_nitf.html">NITF</a> tiles inside a subdataset don't share the same palettes.
-The RPFTOC driver will do its best to remap palettes to the reported palette by gdalinfo (which
-is the palette of the first tile of the subdataset).
-In situations where it wouldn't give a good result, you can try to set the RPFTOC_FORCE_RGBA
-environment variable to TRUE before opening the subdataset. This will cause the driver to expose
-the subdataset as a RGBA dataset, instead of a paletted one.</p>
+<p>In some situations, <a href="frmt_nitf.html">NITF</a> tiles inside a
+subdataset don't share the same palettes.  The RPFTOC driver will do its best
+to remap palettes to the reported palette by gdalinfo (which is the palette of
+the first tile of the subdataset).  In situations where it would not give a
+good result, you can try to set the RPFTOC_FORCE_RGBA environment variable to
+TRUE before opening the subdataset. This will cause the driver to expose the
+subdataset as a RGBA dataset, instead of a paletted one.</p>
 
 <p>It is possible to build external overviews for a subdataset. The overview for the first subdataset
 will be named A.TOC.1.ovr for example, for the second dataset it will be A.TOC.2.ovr, etc.
@@ -1105,7 +1109,7 @@ as the list of the NITF tiles of the subdataset.</p>
 
 <ul>
 <li> <a href="frmt_ogdi.html">OGDI Bridge</a> : the RPFTOC driver gives an equivalent
-     functionnality (without external dependency) to the RPF driver from the OGDI library. </li>
+     functionality (without external dependency) to the RPF driver from the OGDI library. </li>
 <li> <a href="http://www.everyspec.com/MIL-PRF/MIL-PRF+%28080000+-+99999%29/MIL-PRF-89038_25371/">MIL-PRF-89038</a> : specification of RPF, CADRG, CIB products</li>
 </ul>
 
@@ -1243,8 +1247,9 @@ created files are always RLE compressed..</p>
 
 <p>(GDAL >= 1.9.0)</p>
 
-<p>This is a conveniency driver to read Snow Data Assimilation System data.
-Those files contain Int16 raw binary data. The file to provide to GDAL is the .Hdr file.</p>
+<p>This is a convenience driver to read Snow Data Assimilation System
+data.  Those files contain Int16 raw binary data. The file to provide
+to GDAL is the .Hdr file.</p>
 
 <p><a href="http://nsidc.org/data/docs/noaa/g02158_snodas_snow_cover_model/index.html">Snow Data Assimilation System (SNODAS) Data Products at NSIDC</a></p>
 
@@ -1330,7 +1335,7 @@ or other suffixes depending on the image file it comes with.</p>
 <p>GDAL includes support for reading and writing XPM (X11 Pixmap Format) 
 image files.  These are colormapped one band images primarily used for 
 simple graphics purposes in X11 applications.  It has been incorporated in
-GDAL primarily to ease translation of GDAL images into a form useable with
+GDAL primarily to ease translation of GDAL images into a form usable with
 the GTK toolkit.</p>
 
 <p>The XPM support does not support georeferencing (not available from XPM files)
@@ -1366,12 +1371,15 @@ This format is an ASCII interchange format for gridded data
 in an ASCII line format for transport and storage. It is commonly used
 in applications in the Oil and Gas Exploration field.</p>
 
-<p>By default, files are interpreted and written according to the PIXEL_IS_AREA convention.
-If you define the ZMAP_PIXEL_IS_POINT configuration option to TRUE, the PIXEL_IS_POINT
-convention will be followed to interprete/write the file (the georeferenced values in the header
-of the file will then be considered as the coordinate of the center of the pixels). Note that in that case,
-GDAL will report the extent with its usual PIXEL_IS_AREA convention (the coordinates of the topleft corner
-as reported by GDAL will be a half-pixel at the top and left of the values that appear in the file).</p>
+<p>By default, files are interpreted and written according to the
+PIXEL_IS_AREA convention.  If you define the ZMAP_PIXEL_IS_POINT
+configuration option to TRUE, the PIXEL_IS_POINT convention will be
+followed to interpret/write the file (the georeferenced values in the
+header of the file will then be considered as the coordinate of the
+center of the pixels). Note that in that case, GDAL will report the
+extent with its usual PIXEL_IS_AREA convention (the coordinates of the
+topleft corner as reported by GDAL will be a half-pixel at the top and
+left of the values that appear in the file).</p>
 
 <p>Informal specification given in this <a href="http://lists.osgeo.org/pipermail/gdal-dev/2011-June/029173.html">GDAL-dev mailing list thread</a></p>
 

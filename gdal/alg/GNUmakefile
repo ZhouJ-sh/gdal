@@ -8,7 +8,6 @@ OBJ	=	gdalmediancut.o gdaldither.o gdal_crs.o gdaltransformer.o \
 		gdalgrid.o gdalcutline.o gdalproximity.o rasterfill.o \
 		gdalrasterpolygonenumerator.o \
 		gdalsievefilter.o gdalwarpkernel_opencl.o polygonize.o \
-		gdalrasterfpolygonenumerator.o fpolygonize.o \
 		contour.o gdaltransformgeolocs.o \
 		gdal_octave.o gdal_simplesurf.o gdalmatching.o delaunay.o \
 		gdalpansharpen.o
@@ -40,8 +39,10 @@ CPPFLAGS	:=	$(CPPFLAGS) $(OPENCL_FLAGS)
 
 default:	$(OBJ:.o=.$(OBJ_EXT)) gdalgridavx.$(OBJ_EXT) gdalgridsse.$(OBJ_EXT)
 
+# We use CXXFLAGS_NO_LTO_IF_AVX_NONDEFAULT to avoid the whole library to be compiled with -mavx
+# if -mavx is not the default
 gdalgridavx.$(OBJ_EXT):   gdalgridavx.cpp
-	$(CXX) $(GDAL_INCLUDE) $(CXXFLAGS) $(AVXFLAGS) $(CPPFLAGS) -c -o $@ $<
+	$(CXX) $(GDAL_INCLUDE) $(CXXFLAGS_NO_LTO_IF_AVX_NONDEFAULT) $(AVXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 gdalgridsse.$(OBJ_EXT):   gdalgridsse.cpp
 	$(CXX) $(GDAL_INCLUDE) $(CXXFLAGS) $(SSEFLAGS) $(CPPFLAGS) -c -o $@ $<

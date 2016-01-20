@@ -55,7 +55,7 @@ introduced here. <p>
 <dt> <b>-of</b> <i>format</i></dt><dd> 
 Select the format to create the new file as.  The formats are assigned short 
 names such as GTiff (for GeoTIFF) or HFA (for Erdas Imagine).  The list of 
-all format codes can be listed with the <b>--formats</b> switch.  Only
+all format codes can be listed with the <b>\-\-formats</b> switch.  Only
 formats list as "(rw)" (read-write) can be written.<p>
 Many utilities default
 to creating GeoTIFF files if a format is not specified.  File extensions
@@ -126,31 +126,31 @@ All GDAL command line utility programs support the following
 "general" options.<p>
 
 <dl>
-<dt> <b>--version</b></dt><dd> Report the version of GDAL and exit.</dd>
+<dt> <b>\-\-version</b></dt><dd> Report the version of GDAL and exit.</dd>
 
-<dt> <b>--formats</b></dt><dd> List all raster formats supported by this
+<dt> <b>\-\-formats</b></dt><dd> List all raster formats supported by this
 GDAL build (read-only and read-write) and exit. The format support is indicated
  as follows: 'ro' is read-only driver; 
-'rw' is read or write (ie. supports CreateCopy);
-'rw+' is read, write and update (ie. supports Create).
+'rw' is read or write (i.e. supports CreateCopy);
+'rw+' is read, write and update (i.e. supports Create).
 A 'v' is appended for formats supporting virtual IO (/vsimem, /vsigzip, /vsizip, etc).
 A 's' is appended for formats supporting subdatasets.
 Note: The valid formats for the output of gdalwarp are formats that support the
 Create() method (marked as rw+), not just the CreateCopy() method.
 </dd>
 
-<dt> <b>--format</b> <i>format</i></dt><dd>
+<dt> <b>\-\-format</b> <i>format</i></dt><dd>
 List detailed information about a single format driver.  The <i>format</i> 
-should be the short name reported in the <b>--formats</b> list, such as 
+should be the short name reported in the <b>\-\-formats</b> list, such as 
 GTiff.</dd>
 
-<dt> <b>--optfile</b> <i>file</i></dt><dd>
+<dt> <b>\-\-optfile</b> <i>file</i></dt><dd>
 Read the named file and substitute the contents into the commandline
 options list.  Lines beginning with # will be ignored.  Multi-word arguments
 may be kept together with double quotes. 
 </dd>
 
-<dt> <b>--config</b> <i>key value</i></dt><dd>
+<dt> <b>\-\-config</b> <i>key value</i></dt><dd>
 Sets the named <a href="http://trac.osgeo.org/gdal/wiki/ConfigOptions">
 configuration keyword</a> to the given value, as opposed to 
 setting them as environment variables.  Some common configuration keywords
@@ -159,14 +159,14 @@ and GDAL_DATA (path of the GDAL "data" directory).  Individual drivers may
 be influenced by other configuration options.  
 </dd>
 
-<dt> <b>--debug</b> <i>value</i></dt><dd>
+<dt> <b>\-\-debug</b> <i>value</i></dt><dd>
 Control what debugging messages are emitted.  A value of <i>ON</i> will
 enable all debug messages.  A value of <i>OFF</i> will disable all debug
 messages.  Another value will select only debug messages containing that
 string in the debug prefix code.  
 </dd>
 
-<dt> <b>--help-general</b></dt><dd>
+<dt> <b>\-\-help-general</b></dt><dd>
 Gives a brief usage message for the generic GDAL commandline options 
 and exit.
 </dd>
@@ -253,6 +253,10 @@ the full geotransform (but not GCPs).
 <li> Band pseudo-color tables. 
 </ul>
 
+\section gdalinfo_api C API
+
+Starting with GDAL 2.1, this utility is also callable from C with GDALInfo().
+
 \section gdalinfo_example EXAMPLE
 
 \verbatim
@@ -301,7 +305,7 @@ converts raster data between different formats
 gdal_translate [--help-general]
        [-ot {Byte/Int16/UInt16/UInt32/Int32/Float32/Float64/
              CInt16/CInt32/CFloat32/CFloat64}] [-strict]
-       [-of format] [-b band] [-mask band] [-expand {gray|rgb|rgba}]
+       [-of format] [-b band]* [-mask band] [-expand {gray|rgb|rgba}]
        [-outsize xsize[%]|0 ysize[%]|0] [-tr xres yres]
        [-r {nearest,bilinear,cubic,cubicspline,lanczos,average,mode}]
        [-unscale] [-scale[_bn] [src_min src_max [dst_min dst_max]]]* [-exponent[_bn] exp_val]*
@@ -372,7 +376,7 @@ It is also possible to use the "-scale_bn" syntax where bn is a band number
 one or several specific bands.
 </dd>
 <dt> <b>-exponent</b> <i> exp_val</i>:</dt><dd> (From GDAL 1.11) To apply non-linear scaling
-with a power function. exp_val is the exponent of the power function (must be postive). This option
+with a power function. exp_val is the exponent of the power function (must be positive). This option
 must be used with the -scale option.
 If specified only once, -exponent applies to all bands of the output image.
 It can be repeated several times so as to specify per band parameters.
@@ -436,6 +440,10 @@ file name, URL of data source or subdataset name for multi-dataset files.</dd>
 <dt> <i>dst_dataset</i>:</dt><dd> The destination file name.</dd>
 </dl>
 
+\section gdal_translate_api C API
+
+Starting with GDAL 2.1, this utility is also callable from C with GDALTranslate().
+
 \section gdal_translate_example EXAMPLE
 
 \verbatim
@@ -467,7 +475,7 @@ builds or rebuilds overview images
 
 \verbatim
 gdaladdo [-r {nearest,average,gauss,cubic,cubicspline,lanczos,average_mp,average_magphase,mode}]
-         [-b band]
+         [-b band]*
          [-ro] [-clean] [-oo NAME=VALUE]* [--help-general] filename levels
 \endverbatim
 
@@ -523,18 +531,18 @@ already has overviews computed, you don't need to clean the existing overviews.
 Some format drivers do not support overviews at all.  Many format drivers
 store overviews in a secondary file with the extension .ovr that is actually
 in TIFF format.  By default, the GeoTIFF driver stores overviews internally to the file 
-operated on (if it is writeable), unless the -ro flag is specified.
+operated on (if it is writable), unless the -ro flag is specified.
 
 Most drivers also support an alternate overview format using Erdas Imagine 
 format.  To trigger this use the USE_RRD=YES configuration option.  This will 
 place the overviews in an associated .aux file suitable for direct use with 
-Imagine or ArcGIS as well as GDAL applications.  (eg --config USE_RRD YES)
+Imagine or ArcGIS as well as GDAL applications.  (e.g. --config USE_RRD YES)
 
 \section gdaladdo_externalgtiffoverviews External overviews in GeoTIFF format
 
 External overviews created in TIFF format may be compressed using the COMPRESS_OVERVIEW 
 configuration option.  All compression methods, supported by the GeoTIFF 
-driver, are available here. (eg --config COMPRESS_OVERVIEW DEFLATE).
+driver, are available here. (e.g. --config COMPRESS_OVERVIEW DEFLATE).
 The photometric interpretation can be set with --config PHOTOMETRIC_OVERVIEW {RGB,YCBCR,...},
 and the interleaving with --config INTERLEAVE_OVERVIEW {PIXEL|BAND}.
 
@@ -563,6 +571,10 @@ documented in the GeoTIFF driver documentation.
 
 See the documentation of the GeoTIFF driver for further explanations on all those options.
 
+\section gdaladdo_api C API
+
+Functionnality of this utility can be done from C with GDALBuildOverviews().
+
 \section gdaladdo_example EXAMPLE
 
 \htmlonly
@@ -582,7 +594,7 @@ gdaladdo -ro --config COMPRESS_OVERVIEW DEFLATE erdas.img 2 4 8 16
 \endverbatim
 
 Create an external JPEG-compressed GeoTIFF overview file from a 3-band RGB dataset
-(if the dataset is a writeable GeoTIFF, you also need to add the -ro option to
+(if the dataset is a writable GeoTIFF, you also need to add the -ro option to
 force the generation of external overview):
 
 \verbatim
@@ -696,13 +708,13 @@ Builds a VRT from a list of datasets. (compiled by default since GDAL 1.6.1)
 gdalbuildvrt [-tileindex field_name]
              [-resolution {highest|lowest|average|user}]
              [-te xmin ymin xmax ymax] [-tr xres yres] [-tap]
-             [-separate] [-b band] [-sd subdataset]
+             [-separate] [-b band]* [-sd subdataset]
              [-allow_projection_difference] [-q]
              [-addalpha] [-hidenodata]
              [-srcnodata "value [value...]"] [-vrtnodata "value [value...]"] 
              [-a_srs srs_def]
              [-r {nearest,bilinear,cubic,cubicspline,lanczos,average,mode}]
-             [-input_file_list my_liste.txt] [-overwrite] output.vrt [gdalfile]*
+             [-input_file_list my_list.txt] [-overwrite] output.vrt [gdalfile]*
 \endverbatim
 
 \section gdalbuildvrt_description DESCRIPTION
@@ -785,7 +797,8 @@ is written in the NODATA element of each ComplexSource element. Use a value of
 
 <dt> <b>-b</b> <i>band</i>:</dt><dd>(GDAL >= 1.10.0) 
 Select an input <i>band</i> to be processed. Bands are numbered from 1.
-If input bands not set all bands will be added to vrt</dd>
+If input bands not set all bands will be added to vrt.
+Multiple <b>-b</b> switches may be used to select a set of input bands.</dd>
 
 <dt> <b>-sd</b> <i>subdataset</i></dt><dd> (GDAL >= 1.10.0) If the input
 dataset contains several subdatasets use a subdataset with the specified
@@ -845,7 +858,7 @@ gdalbuildvrt doq_index.vrt doq/*.tif
 
 Make a virtual mosaic from files whose name is specified in a text file :
 \verbatim
-gdalbuildvrt -input_file_list my_liste.txt doq_index.vrt
+gdalbuildvrt -input_file_list my_list.txt doq_index.vrt
 \endverbatim
 
 Make a RGB virtual mosaic from 3 single-band input files :
@@ -921,6 +934,10 @@ create output in a particular format, default is shapefiles.</dd>
 <dd> Provide a name for the output vector layer.  Defaults to "contour".</dd>
 </dl>
 
+\section gdal_contour_api C API
+
+Functionality of this utility can be done from C with GDALContourGenerate().
+
 \section gdal_contour_example EXAMPLE
 
 This would create 10meter contours from the DEM data in dem.tif and produce
@@ -948,8 +965,8 @@ burns vector geometries into a raster
 Usage: gdal_rasterize [-b band]* [-i] [-at]
        [-burn value]* | [-a attribute_name] [-3d]
        [-l layername]* [-where expression] [-sql select_statement]
-       [-of format] [-a_srs srs_def] [-co "NAME=VALUE"]*
-       [-a_nodata value] [-init value]*
+       [-dialect dialect] [-of format] [-a_srs srs_def]
+       [-co "NAME=VALUE"]* [-a_nodata value] [-init value]*
        [-te xmin ymin xmax ymax] [-tr xres yres] [-tap] [-ts width height]
        [-ot {Byte/Int16/UInt16/UInt32/Int32/Float32/Float64/
              CInt16/CInt32/CFloat32/CFloat64}] [-q]
@@ -962,7 +979,7 @@ This program burns vector geometries (points, lines, and polygons) into the
 raster band(s) of a raster image.  Vectors are read from OGR supported vector 
 formats. 
 
-Note that on the refly reprojection of vector data to the coordinate system of the
+Note that on the fly reprojection of vector data to the coordinate system of the
 raster data is only supported since GDAL 2.1.0.
 
 Since GDAL 1.8.0, the target GDAL file can be created by gdal_rasterize. Either
@@ -994,7 +1011,7 @@ The value will be burned into all output bands.</dd>
 
 <dt> <b>-3d</b>: </dt><dd> 
 Indicates that a burn value should be extracted from the "Z" values of the 
-feature. These values are adjusted by the burn value given by "-burn value" or
+feature. These values are added to the burn value given by "-burn value" or
 "-a attribute_name" if provided. As of now, only points and lines are drawn in
 3D.</dd>
 
@@ -1010,6 +1027,12 @@ to burn in from the input layer(s). </dd>
 <dt> <b>-sql</b> <em>select_statement</em>: </dt><dd> 
 An SQL statement to be evaluated against the datasource to produce a
 virtual layer of features to be burned in.</dd>
+
+<dt> <b>-dialect</b> <em>dialect</em>: </dt><dd>
+(starting with GDAL 2.1) The SQL dialect. In some cases can be used to use
+(unoptimized) OGR SQL instead of the native SQL of an RDBMS by passing OGRSQL.
+Starting with GDAL 1.10, the "SQLITE" dialect can also be used with any
+datasource.</dd>
 
 <dt> <b>-of</b> <i>format</i>:</dt><dd> (GDAL >= 1.8.0)
 Select the output format.  The default is GeoTIFF (GTiff).  Use the short format
@@ -1067,6 +1090,10 @@ The GDAL supported output file.  Must support update mode access.
 Before GDAL 1.8.0, gdal_rasterize could not create new output files.</dd>
 
 </dl>
+
+\section gdal_rasterize_api C API
+
+Starting with GDAL 2.1, this utility is also callable from C with GDALRasterize().
 
 \section gdal_rasterize_example EXAMPLE
 
@@ -1221,12 +1248,12 @@ projection,including  GCP-based transformations.
 <dt> <b>-s_srs</b> <em>srs def</em>:</dt><dd> source spatial reference set.
 The coordinate systems that can be passed are anything supported by the
 OGRSpatialReference.SetFromUserInput() call, which includes EPSG PCS and GCSes
-(ie. EPSG:4296), PROJ.4 declarations (as above), or the name of a .prf file
+(i.e. EPSG:4296), PROJ.4 declarations (as above), or the name of a .prf file
 containing well known text.</dd>
 <dt> <b>-t_srs</b> <em>srs_def</em>:</dt><dd> target spatial reference set.
 The coordinate systems that can be passed are anything supported by the
 OGRSpatialReference.SetFromUserInput() call, which includes EPSG PCS and GCSes
-(ie. EPSG:4296), PROJ.4 declarations (as above), or the name of a .prf file
+(i.e. EPSG:4296), PROJ.4 declarations (as above), or the name of a .prf file
 containing well known text.</dd>
 <dt> <b>-to</b> <em>NAME=VALUE</em>:</dt><dd> set a transformer option suitable
 to pass to GDALCreateGenImgProjTransformer2(). </dd>
@@ -1311,15 +1338,15 @@ nearblack [-of format] [-white | [-color c1,c2,c3...cn]*] [-near dist] [-nb non_
 
 This utility will scan an image and try to set all pixels that are nearly or exactly
 black, white or one or more custom colors around the collar to black or white.  This
-is often used to "fix up" lossy compressed airphotos so that color pixels
-can be treated as transparent when mosaicking. 
+is often used to "fix up" lossy compressed air photos so that color pixels
+can be treated as transparent when mosaicing.
 
 <dl>
 <dt> <b>-o</b> <i>outfile</i>:</dt><dd> The name of the output file to be
 created.  Newly created files are created with the HFA driver by default
 (Erdas Imagine - .img)</dd>
 <dt> <b>-of</b> <i>format</i>:</dt><dd> (GDAL 1.8.0 or later) Select the output format.
-Use the short format name (GTiff for GeoTIFF for examle).</dd>
+Use the short format name (GTiff for GeoTIFF for example).</dd>
 <dt> <b>-co</b> <i>"NAME=VALUE"</i>:</dt><dd> (GDAL 1.8.0 or later) Passes a creation option to the
 output format driver.  Multiple <b>-co</b> options may be listed.  See format 
 specific documentation for legal creation options for each format. Only valid when creating a new file</dd>
@@ -1367,6 +1394,10 @@ The processing is all done in 8bit (Bytes).
 If the output file is omitted, the processed results will be written back
 to the input file - which must support update. 
 
+\section nearblack_api C API
+
+Starting with GDAL 2.1, this utility is also callable from C with GDALNearblack().
+
 \if man
 \section nearblack_author AUTHORS
 Frank Warmerdam <warmerdam@pobox.com>
@@ -1382,8 +1413,9 @@ mosaics a set of images
 
 \verbatim
 gdal_merge.py [-o out_filename] [-of out_format] [-co NAME=VALUE]*
-              [-ps pixelsize_x pixelsize_y] [-tap] [-separate] [-v] [-pct]
-              [-ul_lr ulx uly lrx lry] [-n nodata_value] [-init "value [value...]"]
+              [-ps pixelsize_x pixelsize_y] [-tap] [-separate] [-q] [-v] [-pct]
+              [-ul_lr ulx uly lrx lry] [-init "value [value...]"]
+              [-n nodata_value] [-a_nodata output_nodata_value]
               [-ot datatype] [-createonly] input_files
 \endverbatim
 
@@ -1404,7 +1436,7 @@ Output format, defaults to GeoTIFF (GTiff).
 Creation option for output file.  Multiple options can be specified.
 </dd>
 <dt> <b>-ot</b> <i>datatype</i>:</dt><dd> 
-Force the output image bands to have a specific type. Use type names (ie. Byte, Int16,...)
+Force the output image bands to have a specific type. Use type names (i.e. Byte, Int16,...)
 </dd>
 <dt> <b>-ps</b> <i>pixelsize_x pixelsize_y</i>:</dt><dd> Pixel size to be used for the
 output file.  If not specified the resolution of the first input file will
@@ -1476,7 +1508,7 @@ generates directory with TMS tiles, KMLs and simple web viewers
 
 \verbatim
 gdal2tiles.py [-p profile] [-r resampling] [-s srs] [-z zoom]
-              [-e] [-a nodata] [-v] [-h] [-k] [-n] [-u url]
+              [-e] [-a nodata] [-v] [-q] [-h] [-k] [-n] [-u url]
               [-w webviewer] [-t title] [-c copyright]
               [-g googlekey] [-b bingkey] input_file [output_dir]
 \endverbatim
@@ -1485,7 +1517,7 @@ gdal2tiles.py [-p profile] [-r resampling] [-s srs] [-z zoom]
 
 This utility generates a directory with small tiles and metadata, following
 the OSGeo Tile Map Service Specification. Simple web pages with viewers based on
-Google Maps and OpenLayers are generated as well - so anybody can comfortably
+Google Maps, OpenLayers and Leaflet are generated as well - so anybody can comfortably
 explore your maps on-line and you do not need to install or configure any
 special software (like MapServer) and the map displays very fast in the
 web browser. You only need to upload the generated directory onto a web server.
@@ -1511,9 +1543,11 @@ can publish a picture without proper georeferencing too.
   <dd>NODATA transparency value to assign to the input data.</dd>
 <dt> <b>-v, --verbose</b></dt>
   <dd>Generate verbose output of tile generation.</dd>
+<dt> <b>-q, --quiet</b></dt>
+  <dd>Disable messages and status to stdout (GDAL &gt;= 2.1).</dd>
 <dt> <b>-h, --help</b></dt>
   <dd>Show help message and exit.</dd>
-<dt> <b>--version</b></dt>
+<dt> <b>\-\-version</b></dt>
   <dd>Show program's version number and exit.</dd>
 </dl>
 
@@ -1534,7 +1568,7 @@ Options for generated Google Earth SuperOverlay metadata
 Options for generated HTML viewers a la Google Maps
 <dl>
 <dt> <b>-w</b> <i>WEBVIEWER</i>, --webviewer=<i>WEBVIEWER</i>:</dt>
-  <dd>Web viewer to generate (all,google,openlayers,none) - default 'all'.</dd>
+  <dd>Web viewer to generate (all,google,openlayers,leaflet,none) - default 'all'.</dd>
 <dt> <b>-t</b> <i>TITLE</i>, --title=<i>TITLE</i>:</dt>
   <dd>Title of the map.</dd>
 <dt> <b>-c</b> <i>COPYRIGHT</i>, --copyright=<i>COPYRIGHT</i>:</dt>
@@ -1581,16 +1615,16 @@ by configure scripts for applications using GDAL but can be queried by an
 end user. 
 
 <dl>
-<dt> <b>--prefix</b>:</dt><dd> the top level directory for the GDAL
+<dt> <b>\-\-prefix</b>:</dt><dd> the top level directory for the GDAL
 installation.</dd>
-<dt> <b>--libs</b>:</dt><dd> The libraries and link directives required to
+<dt> <b>\-\-libs</b>:</dt><dd> The libraries and link directives required to
 use GDAL.</dd>
-<dt> <b>--cflags</b>:</dt><dd> The include and macro definition required to compiled
+<dt> <b>\-\-cflags</b>:</dt><dd> The include and macro definition required to compiled
 modules using GDAL.</dd>
-<dt> <b>--version</b>:</dt><dd> Reports the GDAL version.</dd>
-<dt> <b>--ogr-enabled</b>:</dt><dd> Reports "yes" or "no" to standard output depending
+<dt> <b>\-\-version</b>:</dt><dd> Reports the GDAL version.</dd>
+<dt> <b>\-\-ogr-enabled</b>:</dt><dd> Reports "yes" or "no" to standard output depending
 on whether OGR is built into GDAL.</dd>
-<dt> <b>--formats</b>:</dt><dd> Reports which formats are configured into GDAL 
+<dt> <b>\-\-formats</b>:</dt><dd> Reports which formats are configured into GDAL 
 to stdout.  
 </dd>
 </dl>
@@ -1648,7 +1682,7 @@ Output format, defaults to GeoTIFF (GTiff).
 Creation option for output file.  Multiple options can be specified.
 </dd>
 <dt> <b>-ot</b> <i>datatype</i>:</dt><dd>
-Force the output image bands to have a specific type. Use type names (ie. Byte, Int16,...)
+Force the output image bands to have a specific type. Use type names (i.e. Byte, Int16,...)
 </dd>
 <dt> <b>-ps</b> <i>pixelsize_x pixelsize_y</i>:</dt><dd> Pixel size to be used for the
 output file.  If not specified, 256 x 256 is the default
@@ -1668,7 +1702,7 @@ Resampling algorithm, default is near
 <dt> <b>-s_srs</b> <i>srs_def</i>:</dt><dd>
 Source spatial reference to use. The coordinate systems  that  can  be
 passed  are  anything  supported by the OGRSpatialReference.SetFro‐mUserInput()  call,
-which  includes  EPSG  PCS  and   GCSes   (ie.EPSG:4296),  PROJ.4  declarations (as above),
+which  includes  EPSG, PCS, and GCSes (i.e. EPSG:4296), PROJ.4 declarations (as above),
 or the name of a .prf file containing well known text.
 If  no  srs_def  is  given,  the srs_def  of the source tiles is used (if there is any).
 The srs_def will be propagated to created tiles (if possible) and  to  the  optional
@@ -1685,7 +1719,7 @@ The name of the csv file containing the tile(s) georeferencing information.
 The file contains 5 columns: tilename,minx,maxx,miny,maxy
 </dd>
 <dt> <b>-csvDelim</b> <i>column delimiter</i>:</dt><dd>
-The column delimter used in the csv file, default value is a semicolon ";"
+The column delimiter used in the CSV file, default value is a semicolon ";"
 </dd>
 <dt> <b>-useDirForEachRow</b>:</dt><dd>
 Normally the tiles of the base image are stored as described in <b>-targetDir</b>.
@@ -1695,7 +1729,7 @@ Using this parameter creates a different output structure. The tiles of the base
 are stored in a subdirectory called 0, the pyramids in subdirectories numbered 1,2,....
 Within each of these directories another level of subdirectories is created, numbered from
 0...n, depending of how many tile rows are needed for each level. Finally, a directory contains
-only the the tiles for one row for a specific level. For large images a performance improvement
+only the tiles for one row for a specific level. For large images a performance improvement
 of a factor N could be achieved.
 </dd>
 </dl>
@@ -1928,7 +1962,7 @@ Default is 0.0.</dd>
 
 (Since GDAL 2.1) Linear interpolation algorithm.
 
-The Linear method performs linear interpolation by compution a Delaunay
+The Linear method performs linear interpolation by computing a Delaunay
 triangulation of the point cloud, finding in which triangle of the triangulation
 the point is, and by doing linear interpolation from its barycentric coordinates
 within the triangle.
@@ -2049,6 +2083,10 @@ following way:
 <a href="ogr/drv_csv.html">Comma Separated Value</a> description page contains
 details on CSV format supported by GDAL/OGR.
 
+\section gdal_grid_api C API
+
+Starting with GDAL 2.1, this utility is also callable from C with GDALGrid().
+
 \section gdal_grid_example EXAMPLE
 
 The following would create raster TIFF file from VRT datasource described in
@@ -2160,7 +2198,7 @@ The following general options are available :
 <dt> <b>-of</b> <i>format</i>:</dt><dd> Select the output format.  The default
 is GeoTIFF (GTiff).  Use the short format name.</dd>
 <dt> <b>-compute_edges</b>:</dt><dd> (GDAL >= 1.8.0) Do the computation at raster edges and near nodata values</dd>
-<dt> <b>-alg</b> <i>ZevenbergenThorne</i>:</dt><dd> (GDAL >= 1.8.0) Use Zevenbergen & Thorne formula, instead of Horn's formula, to compute slope & aspect. The litterature suggests Zevenbergen & Thorne to be more suited to smooth landscapes, whereas Horn's formula to perform better on rougher terrain.</dd>
+<dt> <b>-alg</b> <i>ZevenbergenThorne</i>:</dt><dd> (GDAL >= 1.8.0) Use Zevenbergen & Thorne formula, instead of Horn's formula, to compute slope & aspect. The literature suggests Zevenbergen & Thorne to be more suited to smooth landscapes, whereas Horn's formula to perform better on rougher terrain.</dd>
 <dt> <b>-b</b> <i>band</i>:</dt><dd> Select an input <i>band</i> to be processed. Bands are numbered from 1.</dd>
 <dt> <b>-co</b> <i>"NAME=VALUE"</i>:</dt><dd> Passes a creation option to the
 output format driver.  Multiple <b>-co</b> options may be listed.  See format 
@@ -2299,6 +2337,10 @@ Roughness is the largest inter-cell difference of a central pixel and its surrou
 The value -9999 is used as the output nodata value.
 
 There are no specific options.
+
+\section gdaldem_api C API
+
+Starting with GDAL 2.1, this utility is also callable from C with GDALDEMProcessing().
 
 
 \section gdaldem_author AUTHORS
@@ -2506,7 +2548,7 @@ The gdalmanage program can perform various operations on raster data files, depe
 <dt> <i>newdatasetname</i>:</dt><dd>For copy and rename modes, you provide a <i>source</i> filename and a <i>target</i> filename, just like copy and move commands in an operating system.</dd>
 </dl>
 
-\section gdalmanage_exampes EXAMPLES
+\section gdalmanage_examples EXAMPLES
 
 \subsection gdalmanage_example_identify Using identify mode
 

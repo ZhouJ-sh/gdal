@@ -425,11 +425,17 @@ void *qh_setdelnth(setT *set, int nth) {
   setelemT *sizep;
   setelemT *elemp, *lastp;
 
+  if (nth < 0) {
+    qh_fprintf(qhmem.ferr, 6174, "qhull internal error (qh_setdelnth): nth %d is out-of-bounds for set:\n", nth);
+    qh_setprint(qhmem.ferr, "", set);
+    qh_errexit(qhmem_ERRqhull, NULL, NULL);
+    nth = 0;
+  }
   elemp= (setelemT *)SETelemaddr_(set, nth, void);
   sizep= SETsizeaddr_(set);
   if ((sizep->i--)==0)         /*  if was a full set */
     sizep->i= set->maxsize;  /*     *sizep= (maxsize-1)+ 1 */
-  if (nth < 0 || nth >= sizep->i) {
+  if (nth >= sizep->i) {
     qh_fprintf(qhmem.ferr, 6174, "qhull internal error (qh_setdelnth): nth %d is out-of-bounds for set:\n", nth);
     qh_setprint(qhmem.ferr, "", set);
     qh_errexit(qhmem_ERRqhull, NULL, NULL);
@@ -1131,7 +1137,7 @@ int qh_setsize(setT *set) {
   >-------------------------------<a name="settemp">-</a>
 
   qh_settemp( setsize )
-    return a stacked, temporary set of upto setsize elements
+    return a stacked, temporary set of up to setsize elements
 
   notes:
     use settempfree or settempfree_all to release from qhmem.tempstack
@@ -1164,7 +1170,7 @@ setT *qh_settemp(int setsize) {
     errors if set not from previous   qh_settemp
 
   to locate errors:
-    use 'T2' to find source and then find mis-matching qh_settemp
+    use 'T2' to find source and then find mismatching qh_settemp
 
   design:
     check top of qhmem.tempstack
@@ -1335,5 +1341,3 @@ void qh_setzero(setT *set, int idx, int size) {
   count= size - idx + 1;   /* +1 for NULL terminator */
   memset((char *)SETelemaddr_(set, idx, void), 0, (size_t)count * SETelemsize);
 } /* setzero */
-
-

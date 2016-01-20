@@ -5,7 +5,7 @@
 # Project:  GDAL/OGR Test Suite
 # Purpose:  Test GPX driver functionality.
 # Author:   Even Rouault <even dot rouault at mines dash paris dot org>
-# 
+#
 ###############################################################################
 # Copyright (c) 2007-2010, Even Rouault <even dot rouault at mines-paris dot org>
 #
@@ -66,76 +66,77 @@ def ogr_gpx_init():
 def ogr_gpx_1():
     if not gdaltest.have_gpx:
         return 'skip'
-    
+
     if gdaltest.gpx_ds is None:
         return 'fail'
 
     lyr = gdaltest.gpx_ds.GetLayerByName( 'waypoints' )
-    
+
     expect = [2, None]
 
-    tr = ogrtest.check_features_against_list( lyr, 'ele', expect )
+    with gdaltest.error_handler():
+        tr = ogrtest.check_features_against_list( lyr, 'ele', expect )
     if not tr:
         return 'fail'
-    
+
     lyr.ResetReading()
-    
+
     expect = ['waypoint name', None]
 
     tr = ogrtest.check_features_against_list( lyr, 'name', expect )
     if not tr:
         return 'fail'
-    
+
     lyr.ResetReading()
-    
+
     expect = ['href', None]
 
     tr = ogrtest.check_features_against_list( lyr, 'link1_href', expect )
     if not tr:
         return 'fail'
-    
+
     lyr.ResetReading()
-    
+
     expect = ['text', None]
 
     tr = ogrtest.check_features_against_list( lyr, 'link1_text', expect )
     if not tr:
         return 'fail'
-    
+
     lyr.ResetReading()
-    
+
     expect = ['type', None]
 
     tr = ogrtest.check_features_against_list( lyr, 'link1_type', expect )
     if not tr:
         return 'fail'
-    
+
     lyr.ResetReading()
-    
+
     expect = ['href2', None]
 
     tr = ogrtest.check_features_against_list( lyr, 'link2_href', expect )
     if not tr:
         return 'fail'
-    
+
     lyr.ResetReading()
-    
+
     expect = ['text2', None]
 
     tr = ogrtest.check_features_against_list( lyr, 'link2_text', expect )
     if not tr:
         return 'fail'
-    
+
     lyr.ResetReading()
-    
+
     expect = ['type2', None]
 
     tr = ogrtest.check_features_against_list( lyr, 'link2_type', expect )
     if not tr:
         return 'fail'
-    
+
     lyr.ResetReading()
-    
+
     expect = ['2007/11/25 17:58:00+01', None]
 
     tr = ogrtest.check_features_against_list( lyr, 'time', expect )
@@ -161,7 +162,7 @@ def ogr_gpx_1():
 def ogr_gpx_2():
     if not gdaltest.have_gpx:
         return 'skip'
-    
+
     if gdaltest.gpx_ds is None:
         return 'fail'
 
@@ -185,7 +186,7 @@ def ogr_gpx_2():
 def ogr_gpx_3():
     if not gdaltest.have_gpx:
         return 'skip'
-    
+
     if gdaltest.gpx_ds is None:
         return 'fail'
 
@@ -196,7 +197,7 @@ def ogr_gpx_3():
     tr = ogrtest.check_features_against_list( lyr, 'name', expect )
     if not tr:
         return 'fail'
-    
+
     lyr.ResetReading()
     feat = lyr.GetNextFeature()
     if ogrtest.check_feature_geometry( feat, 'POINT (6 5)', max_error = 0.0001 ) != 0:
@@ -238,7 +239,7 @@ def ogr_gpx_4():
 def ogr_gpx_5():
     if not gdaltest.have_gpx:
         return 'skip'
-    
+
     if gdaltest.gpx_ds is None:
         return 'fail'
 
@@ -249,7 +250,7 @@ def ogr_gpx_5():
     tr = ogrtest.check_features_against_list( lyr, 'name', expect )
     if not tr:
         return 'fail'
-    
+
     lyr.ResetReading()
     feat = lyr.GetNextFeature()
     if ogrtest.check_feature_geometry( feat, 'POINT (15 14)', max_error = 0.0001 ) != 0:
@@ -263,10 +264,10 @@ def ogr_gpx_5():
 def ogr_gpx_6():
     if not gdaltest.have_gpx:
         return 'skip'
-    
+
     if gdaltest.gpx_ds is None:
         return 'skip'
-    
+
     try:
         gdal.PushErrorHandler( 'CPLQuietErrorHandler' )
         ogr.GetDriverByName('CSV').DeleteDataSource( 'tmp/gpx.gpx' )
@@ -275,7 +276,7 @@ def ogr_gpx_6():
         pass
 
     co_opts = [ ]
-    
+
     # Duplicate waypoints
     gpx_lyr = gdaltest.gpx_ds.GetLayerByName( 'waypoints' )
 
@@ -287,7 +288,7 @@ def ogr_gpx_6():
     gpx_lyr.ResetReading()
 
     dst_feat = ogr.Feature( feature_def = gpx2_lyr.GetLayerDefn() )
-    
+
     feat = gpx_lyr.GetNextFeature()
     while feat is not None:
         dst_feat.SetFrom( feat )
@@ -305,7 +306,7 @@ def ogr_gpx_6():
     gpx_lyr.ResetReading()
 
     dst_feat = ogr.Feature( feature_def = gpx2_lyr.GetLayerDefn() )
-    
+
     feat = gpx_lyr.GetNextFeature()
     while feat is not None:
         dst_feat.SetFrom( feat )
@@ -323,7 +324,7 @@ def ogr_gpx_6():
     gpx_lyr.ResetReading()
 
     dst_feat = ogr.Feature( feature_def = gpx2_lyr.GetLayerDefn() )
-    
+
     feat = gpx_lyr.GetNextFeature()
     while feat is not None:
         dst_feat.SetFrom( feat )
@@ -391,23 +392,23 @@ def ogr_gpx_7():
 #Now check that the extensions fields have been well written
     gdaltest.gpx_ds = ogr.Open('tmp/gpx.gpx')
     gpx_lyr = gdaltest.gpx_ds.GetLayerByName( 'waypoints' )
-    
+
     expect = ['PID1', 'PID2']
 
     tr = ogrtest.check_features_against_list( gpx_lyr, 'ogr_Primary_ID', expect )
     if not tr:
         return 'fail'
-    
+
     gpx_lyr.ResetReading()
-    
+
     expect = ['SID1', 'SID2']
 
     tr = ogrtest.check_features_against_list( gpx_lyr, 'ogr_Secondary_ID', expect )
     if not tr:
         return 'fail'
-    
+
     gpx_lyr.ResetReading()
-    
+
     expect = ['TID1', None]
 
     tr = ogrtest.check_features_against_list( gpx_lyr, 'ogr_Third_ID', expect )
@@ -511,7 +512,24 @@ def ogr_gpx_8():
     return 'success'
 
 ###############################################################################
-# 
+# Parse file with a <time> extension at track level (#6237)
+
+def ogr_gpx_9():
+    if not gdaltest.have_gpx:
+        return 'skip'
+
+    ds = ogr.Open('data/track_with_time_extension.gpx')
+    lyr = ds.GetLayerByName('tracks')
+    f = lyr.GetNextFeature()
+    if f['time'] != '2015-10-11T15:06:33Z':
+        gdaltest.post_reason('did not get expected result')
+        f.DumpReadable()
+        return 'fail'
+
+    return 'success'
+
+###############################################################################
+#
 
 def ogr_gpx_cleanup():
 
@@ -536,6 +554,7 @@ gdaltest_list = [
     ogr_gpx_4,
     ogr_gpx_7,
     ogr_gpx_8,
+    ogr_gpx_9,
     ogr_gpx_cleanup ]
 
 if __name__ == '__main__':

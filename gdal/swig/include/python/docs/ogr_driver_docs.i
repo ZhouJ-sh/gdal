@@ -29,7 +29,7 @@ pszName:  the name for the new data source. UTF-8 encoded.
 
 papszOptions:  a StringList of name=value options. Options are driver
 specific, and driver information can be found at the following
-url:http://www.gdal.org/ogr/ogr_formats.html
+url:http://www.gdal.org/ogr_formats.html
 
 NULL is returned on failure, or a new OGRDataSource handle on success.
 ";
@@ -72,7 +72,7 @@ This function is the same as the C++ method OGRSFDriver::GetName().
 Parameters:
 -----------
 
-hDriver:  handle to the the driver to get the name from.
+hDriver:  handle to the driver to get the name from.
 
 driver name. This is an internal string and should not be modified or
 freed. ";
@@ -114,7 +114,7 @@ ODrCDeleteDataSource: True if this driver supports deleting data
 sources.
 
 The #define macro forms of the capability names should be used in
-preference to the strings themselves to avoid mispelling.
+preference to the strings themselves to avoid misspelling.
 
 This function is the same as the C++ method
 OGRSFDriver::TestCapability().
@@ -152,7 +152,7 @@ pszNewName:  the name for the new data source.
 
 papszOptions:  a StringList of name=value options. Options are driver
 specific, and driver information can be found at the following
-url:http://www.gdal.org/ogr/ogr_formats.html
+url:http://www.gdal.org/ogr_formats.html
 
 NULL is returned on failure, or a new OGRDataSource handle on success.
 ";

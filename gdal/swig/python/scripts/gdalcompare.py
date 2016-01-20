@@ -32,7 +32,8 @@ import os
 import sys
 import filecmp
 
-from osgeo import gdal, osr
+from osgeo import gdal
+from osgeo import osr
 
 #######################################################
 def compare_metadata(golden_md, new_md, id, options=[]):
@@ -139,7 +140,7 @@ def compare_srs(golden_wkt, new_wkt):
   new_srs = osr.SpatialReference(new_wkt)
 
   if golden_srs.IsSame(new_srs):
-    print('  * IsSame() reports them as equivelent.')
+    print('  * IsSame() reports them as equivalent.')
   else:
     print('  * IsSame() reports them as different.')
 

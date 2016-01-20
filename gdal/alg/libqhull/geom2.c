@@ -34,6 +34,8 @@ coordT *qh_copypoints(coordT *points, int numpoints, int dimension) {
         numpoints);
     qh_errexit(qh_ERRmem, NULL, NULL);
   }
+  /* newpoints cannot be NULL since above qh_errexit didn't return */
+  /* coverity[var_deref_model] */
   memcpy((char *)newpoints, (char *)points, (size_t)size);
   return newpoints;
 } /* copypoints */
@@ -1978,7 +1980,7 @@ boolT qh_sharpnewfacets() {
 
   qh_voronoi_center( dim, points )
     return Voronoi center for a set of points
-    dim is the orginal dimension of the points
+    dim is the original dimension of the points
     gh.gm_matrix/qh.gm_row are scratch buffers
 
   returns:

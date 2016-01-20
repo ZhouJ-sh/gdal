@@ -6,10 +6,10 @@
 # Project:  GDAL/OGR Test Suite
 # Purpose:  Test read/write functionality for JP2OpenJPEG driver.
 # Author:   Even Rouault <even dot rouault at mines dash paris dot org>
-# 
+#
 ###############################################################################
 # Copyright (c) 2010-2013, Even Rouault <even dot rouault at mines-paris dot org>
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
 # to deal in the Software without restriction, including without limitation
@@ -19,7 +19,7 @@
 #
 # The above copyright notice and this permission notice shall be included
 # in all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -224,7 +224,7 @@ def jp2openjpeg_6():
     ds = None
 
     return 'success'
-    
+
 ###############################################################################
 # Open byte.jp2.gz (test use of the VSIL API)
 
@@ -232,10 +232,10 @@ def jp2openjpeg_7():
 
     if gdaltest.jp2openjpeg_drv is None:
         return 'skip'
-    
+
     tst = gdaltest.GDALTest( 'JP2OpenJPEG', '/vsigzip/data/byte.jp2.gz', 1, 50054, filename_absolute = 1 )
     return tst.testOpen()
-    
+
 ###############################################################################
 # Test a JP2OpenJPEG with the 3 bands having 13bit depth and the 4th one 1 bit
 
@@ -243,7 +243,7 @@ def jp2openjpeg_8():
 
     if gdaltest.jp2openjpeg_drv is None:
         return 'skip'
-    
+
     # This test will cause a crash with an unpatched version of Jasper, such as the one of Ubuntu 8.04 LTS
     # --> "jpc_dec.c:1072: jpc_dec_tiledecode: Assertion `dec->numcomps == 3' failed."
     # Recent Debian/Ubuntu have the appropriate patch.
@@ -254,11 +254,11 @@ def jp2openjpeg_8():
         if ret.find('Band 1') == -1:
             gdaltest.post_reason('Jasper library would need patches')
             return 'fail'
-    
+
     ds = gdal.Open('data/3_13bit_and_1bit.jp2')
-    
+
     expected_checksums = [ 64570, 57277, 56048, 61292]
-    
+
     for i in range(4):
         if ds.GetRasterBand(i+1).Checksum() != expected_checksums[i]:
             gdaltest.post_reason('unexpected checksum (%d) for band %d' % (expected_checksums[i], i+1))
@@ -267,7 +267,7 @@ def jp2openjpeg_8():
     if ds.GetRasterBand(1).DataType != gdal.GDT_UInt16:
         gdaltest.post_reason('unexpected data type')
         return 'fail'
-            
+
     return 'success'
 
 ###############################################################################
@@ -294,7 +294,7 @@ def jp2openjpeg_9():
     ds = None
 
     return 'success'
-    
+
 ###############################################################################
 # Test YCBCR420 creation option
 
@@ -562,7 +562,7 @@ def jp2openjpeg_16():
         return 'fail'
 
     return 'success'
- 
+
 ###############################################################################
 # Test writing PixelIsPoint file (#5437)
 
@@ -579,7 +579,7 @@ def jp2openjpeg_17():
     if gdal.VSIStatL('/vsimem/jp2openjpeg_17.jp2.aux.xml') is not None:
         gdaltest.post_reason('fail')
         return 'fail'
-    
+
     ds = gdal.Open( '/vsimem/jp2openjpeg_17.jp2' )
     gt = ds.GetGeoTransform()
     if ds.GetMetadataItem('AREA_OR_POINT') != 'Point':
@@ -671,7 +671,7 @@ def jp2openjpeg_20():
         os.mkdir('tmp/cache/SCHEMAS_OPENGIS_NET')
     except:
         pass
-    
+
     try:
         os.stat('tmp/cache/SCHEMAS_OPENGIS_NET/gml/3.1.1/profiles/gmlJP2Profile/1.0.0/gmlJP2Profile.xsd')
     except:
@@ -710,7 +710,7 @@ def jp2openjpeg_20():
         return 'fail'
 
     return 'success'
-    
+
 ###############################################################################
 # Test YCC=NO creation option
 
@@ -732,7 +732,7 @@ def jp2openjpeg_21():
         return 'fail'
 
     return 'success'
-    
+
 ###############################################################################
 # Test RGBA support
 
@@ -1355,7 +1355,7 @@ def jp2openjpeg_28():
         return 'skip'
 
     src_ds = gdal.GetDriverByName('MEM').Create('', 10, 10, 1)
-    
+
     tests = [ ( ['CODEBLOCK_WIDTH=2'], 64, 64, True ),
               ( ['CODEBLOCK_WIDTH=2048'], 64, 64, True ),
               ( ['CODEBLOCK_HEIGHT=2'], 64, 64, True ),
@@ -1393,7 +1393,7 @@ def jp2openjpeg_29():
         return 'skip'
 
     src_ds = gdal.GetDriverByName('MEM').Create('', 128, 128, 1)
-    
+
     tests = [ ( ['TILEPARTS=DISABLED'], False ),
               ( ['TILEPARTS=RESOLUTIONS'], False ),
               ( ['TILEPARTS=LAYERS'], True ), # warning since there's only one quality layer
@@ -1436,7 +1436,7 @@ def jp2openjpeg_30():
     ct.SetColorEntry( 2, (255,0,255,255) )
     ct.SetColorEntry( 3, (0,255,255,255) )
     src_ds.GetRasterBand( 1 ).SetRasterColorTable( ct )
-    
+
     tests = [ ( [], False ),
               ( ['QUALITY=100', 'REVERSIBLE=YES'], False ),
               ( ['QUALITY=50'], True ),
@@ -1507,7 +1507,7 @@ def jp2openjpeg_30():
         return 'fail'
     del out_ds
     gdal.Unlink('/vsimem/jp2openjpeg_30.jp2')
-    
+
     # Not supported: color table on first band, and other bands
     src_ds = gdal.GetDriverByName('MEM').Create('', 10, 10, 2)
     ct = gdal.ColorTable()
@@ -2374,7 +2374,7 @@ def jp2openjpeg_45():
         gdaltest.post_reason('fail')
         print(gmljp2)
         return 'fail'
-    
+
     ret = validate('/vsimem/jp2openjpeg_45.jp2', inspire_tg = False)
     if ret == 'fail':
         gdaltest.post_reason('fail')
@@ -2446,7 +2446,6 @@ def jp2openjpeg_45():
     if out_ds is not None:
         gdaltest.post_reason('fail')
         return 'fail'
-        
 
     conf = {
     "root_instance": {
@@ -2518,7 +2517,7 @@ def jp2openjpeg_45():
 """<gmljp2:dcMetadata xmlns:dc="http://purl.org/dc/elements/1.1/">
     <dc:title>Second metadata</dc:title>
 </gmljp2:dcMetadata>""")
-    
+
     gdal.FileFromMemBuffer("/vsimem/third_metadata.xml",
 """<gmljp2:dcMetadata xmlns:dc="http://purl.org/dc/elements/1.1/">
     <dc:title>Third metadata</dc:title>
@@ -2969,6 +2968,11 @@ def jp2openjpeg_45():
     del out_ds
     if gdal.VSIStatL('/vsimem/jp2openjpeg_45.jp2.aux.xml') is not None:
         gdaltest.post_reason('fail')
+        fp = gdal.VSIFOpenL('/vsimem/jp2openjpeg_45.jp2.aux.xml', 'rb')
+        if fp is not None:
+            data = gdal.VSIFReadL(1, 100000, fp).decode('ascii')
+            gdal.VSIFCloseL(fp)
+            print(data)
         return 'fail'
 
     ds = gdal.Open('/vsimem/jp2openjpeg_45.jp2')
@@ -2979,8 +2983,7 @@ def jp2openjpeg_45():
     ds = None
 
     gdal.Unlink('/vsimem/jp2openjpeg_45.jp2')
-    
-    
+
     # Test writing&reading a gmljp2:featureMember pointing to a remote resource
     conf = {"root_instance":{"gml_filelist": [ { "remote_resource":"http://svn.osgeo.org/gdal/trunk/autotest/ogr/data/expected_gml_gml32.gml" } ]  }}
     out_ds = gdaltest.jp2openjpeg_drv.CreateCopy('/vsimem/jp2openjpeg_45.jp2', src_ds, options = ['GMLJP2V2_DEF=' + json.dumps(conf)])
@@ -2992,8 +2995,8 @@ def jp2openjpeg_45():
         gdaltest.post_reason('fail')
         return 'fail'
     ds = None
-    
-    # We have to explicitely allow it
+
+    # We have to explicitly allow it.
     ds = gdal.OpenEx('/vsimem/jp2openjpeg_45.jp2', open_options = ['OPEN_REMOTE_GML=YES'])
     gdal.Unlink('/vsimem/jp2openjpeg_45.jp2')
 
@@ -3047,6 +3050,10 @@ def jp2openjpeg_46():
     if gdal.GetLastErrorMsg().find('dynamic_metadata not supported') >= 0:
         gdal.Unlink('/vsimem/jp2openjpeg_46.jp2')
         return 'skip'
+    # Maybe a conflict with FileGDB libxml2
+    if gdal.GetLastErrorMsg().find('An error occurred in libxml2') >= 0:
+        gdal.Unlink('/vsimem/jp2openjpeg_46.jp2')
+        return 'skip'
 
     ds = gdal.Open('/vsimem/jp2openjpeg_46.jp2')
     gmljp2 = ds.GetMetadata_List("xml:gml.root-instance")[0]
@@ -3055,6 +3062,8 @@ def jp2openjpeg_46():
 yeah: """) < 0:
         gdaltest.post_reason('fail')
         print(gmljp2)
+        if gmljp2.find("""<gmljp2:metadata>1 str true""") >= 0:
+            return 'skip'
         return 'fail'
     ds = None
 
@@ -3082,7 +3091,7 @@ yeah: """) < 0:
         gdal.Unlink("/vsimem/template.xml")
         gdal.Unlink("/vsimem/source.xml")
         del out_ds
-        
+
         ds = gdal.Open('/vsimem/jp2openjpeg_46.jp2')
         gmljp2 = ds.GetMetadata_List("xml:gml.root-instance")[0]
         ds = None
@@ -3096,7 +3105,7 @@ yeah: """) < 0:
             return 'fail'
 
 
-    # Inexisting template
+    # Nonexistent template.
     gdal.FileFromMemBuffer("/vsimem/source.xml","""<A/>""")
     conf = {
     "root_instance": {
@@ -3119,8 +3128,9 @@ yeah: """) < 0:
     gdal.Unlink("/vsimem/source.xml")
     gdal.Unlink('/vsimem/jp2openjpeg_46.jp2')
 
-    # Inexisting source
-    gdal.FileFromMemBuffer("/vsimem/template.xml","""<gmljp2:metadata></gmljp2:metadata>""")
+    # Nonexistent source
+    gdal.FileFromMemBuffer(
+        "/vsimem/template.xml","""<gmljp2:metadata></gmljp2:metadata>""")
     conf = {
     "root_instance": {
         "metadata": [
@@ -3195,6 +3205,27 @@ def jp2openjpeg_47():
     ds = None
 
     gdal.Unlink('/vsimem/jp2openjpeg_47.jp2')
+
+    return 'success'
+
+###############################################################################
+# Test reading a dataset whose tile dimensions are larger than dataset ones
+
+def jp2openjpeg_48():
+
+    if gdaltest.jp2openjpeg_drv is None:
+        return 'skip'
+
+    ds = gdal.Open('data/byte_tile_2048.jp2')
+    (blockxsize, blockysize) = ds.GetRasterBand(1).GetBlockSize()
+    if (blockxsize, blockysize) != (20,20):
+        gdaltest.post_reason('fail')
+        print(blockxsize, blockysize)
+        return 'fail'
+    if ds.GetRasterBand(1).Checksum() != 4610:
+        gdaltest.post_reason('fail')
+        return 'fail'
+    ds = None
 
     return 'success'
 
@@ -3356,7 +3387,7 @@ def jp2openjpeg_online_6():
         print(cs1, cs2, cs3)
         gdaltest.post_reason('Did not get expected checksums')
         return 'fail'
-        
+
     ds = None
 
     return 'success'
@@ -3417,6 +3448,7 @@ gdaltest_list = [
     jp2openjpeg_45,
     jp2openjpeg_46,
     jp2openjpeg_47,
+    jp2openjpeg_48,
     jp2openjpeg_online_1,
     jp2openjpeg_online_2,
     jp2openjpeg_online_3,

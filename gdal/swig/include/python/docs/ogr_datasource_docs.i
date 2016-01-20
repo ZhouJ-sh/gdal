@@ -59,7 +59,7 @@ no constraints on the types geometry to be written.
 
 papszOptions:  a StringList of name=value options. Options are driver
 specific, and driver information can be found at the following
-url:http://www.gdal.org/ogr/ogr_formats.html
+url:http://www.gdal.org/ogr_formats.html
 
 NULL is returned on failure, or a new OGRLayer handle on success.
 Example: ";
@@ -153,7 +153,7 @@ OGR_DS_ReleaseResultSet() before the data source is closed
 (destroyed).
 
 For more information on the SQL dialect supported internally by OGR
-review theOGR SQL document. Some drivers (ie. Oracle and PostGIS) pass
+review theOGR SQL document. Some drivers (i.e. Oracle and PostGIS) pass
 the SQL directly through to the underlying RDBMS.
 
 This function is the same as the C++ method
@@ -210,7 +210,7 @@ whether or not the capability is available for this object.
 ODsCCreateLayer: True if this datasource can create new layers.
 
 The #define macro forms of the capability names should be used in
-preference to the strings themselves to avoid mispelling.
+preference to the strings themselves to avoid misspelling.
 
 This function is the same as the C++ method
 OGRDataSource::TestCapability().

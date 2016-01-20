@@ -175,14 +175,12 @@ GDALMultiFilter( GDALRasterBandH hTargetBand,
 /* -------------------------------------------------------------------- */
 /*      Allocate rotating buffers.                                      */
 /* -------------------------------------------------------------------- */
-    pabyTMaskBuf = (GByte *) VSIMalloc2(nXSize, nBufLines);
-    pabyFMaskBuf = (GByte *) VSIMalloc2(nXSize, nBufLines);
+    pabyTMaskBuf = (GByte *) VSI_MALLOC2_VERBOSE(nXSize, nBufLines);
+    pabyFMaskBuf = (GByte *) VSI_MALLOC2_VERBOSE(nXSize, nBufLines);
 
-    paf3PassLineBuf = (float *) VSIMalloc3(nXSize, nBufLines, 3 * sizeof(float));
+    paf3PassLineBuf = (float *) VSI_MALLOC3_VERBOSE(nXSize, nBufLines, 3 * sizeof(float));
     if (pabyTMaskBuf == NULL || pabyFMaskBuf == NULL || paf3PassLineBuf == NULL)
     {
-        CPLError(CE_Failure, CPLE_OutOfMemory,
-                 "Could not allocate enough memory for temporary buffers");
         eErr = CE_Failure;
         goto end;
     }
@@ -390,7 +388,7 @@ CPLErr CPL_STDCALL
 GDALFillNodata( GDALRasterBandH hTargetBand,
                 GDALRasterBandH hMaskBand,
                 double dfMaxSearchDist,
-                int bDeprecatedOption,
+                CPL_UNUSED int bDeprecatedOption,
                 int nSmoothingIterations,
                 char **papszOptions,
                 GDALProgressFunc pfnProgress,
@@ -542,22 +540,19 @@ GDALFillNodata( GDALRasterBandH hTargetBand,
     int     iX;
     int     iY;
 
-    panLastY = (GUInt32 *) VSICalloc(nXSize,sizeof(GUInt32));
-    panThisY = (GUInt32 *) VSICalloc(nXSize,sizeof(GUInt32));
-    panTopDownY = (GUInt32 *) VSICalloc(nXSize,sizeof(GUInt32));
-    pafLastValue = (float *) VSICalloc(nXSize,sizeof(float));
-    pafThisValue = (float *) VSICalloc(nXSize,sizeof(float));
-    pafTopDownValue = (float *) VSICalloc(nXSize,sizeof(float));
-    pafScanline = (float *) VSICalloc(nXSize,sizeof(float));
-    pabyMask = (GByte *) VSICalloc(nXSize,1);
-    pabyFiltMask = (GByte *) VSICalloc(nXSize,1);
+    panLastY = (GUInt32 *) VSI_CALLOC_VERBOSE(nXSize,sizeof(GUInt32));
+    panThisY = (GUInt32 *) VSI_CALLOC_VERBOSE(nXSize,sizeof(GUInt32));
+    panTopDownY = (GUInt32 *) VSI_CALLOC_VERBOSE(nXSize,sizeof(GUInt32));
+    pafLastValue = (float *) VSI_CALLOC_VERBOSE(nXSize,sizeof(float));
+    pafThisValue = (float *) VSI_CALLOC_VERBOSE(nXSize,sizeof(float));
+    pafTopDownValue = (float *) VSI_CALLOC_VERBOSE(nXSize,sizeof(float));
+    pafScanline = (float *) VSI_CALLOC_VERBOSE(nXSize,sizeof(float));
+    pabyMask = (GByte *) VSI_CALLOC_VERBOSE(nXSize,1);
+    pabyFiltMask = (GByte *) VSI_CALLOC_VERBOSE(nXSize,1);
     if (panLastY == NULL || panThisY == NULL || panTopDownY == NULL ||
         pafLastValue == NULL || pafThisValue == NULL || pafTopDownValue == NULL ||
         pafScanline == NULL || pabyMask == NULL || pabyFiltMask == NULL)
     {
-        CPLError(CE_Failure, CPLE_OutOfMemory,
-                 "Could not allocate enough memory for temporary buffers");
-
         eErr = CE_Failure;
         goto end;
     }

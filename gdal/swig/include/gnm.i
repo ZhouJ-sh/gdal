@@ -46,6 +46,10 @@
 %include swig_csharp_extensions.i
 #endif
 
+#ifdef SWIGPERL
+%include confess.i
+#endif
+
 #ifndef SWIGJAVA
 %feature ("compactdefaultargs");
 #endif
@@ -59,9 +63,9 @@ typedef void GNMNetworkShadow;
 typedef void GNMGenericNetworkShadow;
 %}
 
-#if defined(SWIGPYTHON) || defined(SWIGJAVA)
+#if defined(SWIGPYTHON) || defined(SWIGJAVA) || defined(SWIGPERL)
 %{
-#ifdef DEBUG 
+#ifdef DEBUG
 typedef struct OGRLayerHS OGRLayerShadow;
 typedef struct OGRFeatureHS OGRFeatureShadow;
 typedef struct OGRSpatialReferenceHS OSRSpatialReferenceShadow;
@@ -88,6 +92,7 @@ typedef void OSRSpatialReferenceShadow;
 //%include gnm_java.i
 #elif defined(SWIGPERL)
 //%include gnm_perl.i
+%import typemaps_perl.i
 #else
 %include gdal_typemaps.i
 #endif
@@ -189,11 +194,11 @@ class GNMNetworkShadow : public GDALMajorObjectShadow
         {
             return GNMGetPath(self, nStartFID, nEndFID, eAlgorithm, options);
         }
-        
+
         CPLErr DisconnectAll() {
             return GNMDisconnectAll( self );
         }
-        
+
         char const *GetProjection() {
             return GDALGetProjectionRef( self );
         }
@@ -201,18 +206,18 @@ class GNMNetworkShadow : public GDALMajorObjectShadow
         char const *GetProjectionRef() {
             return GDALGetProjectionRef( self );
         }
-        
+
         %apply (char **CSL) {char **};
         char **GetFileList() {
             return GDALGetFileList( self );
         }
         %clear char **;
-        
+
         /* Note that datasources own their layers */
         #ifndef SWIGJAVA
         %feature( "kwargs" ) CreateLayer;
         #endif
-        OGRLayerShadow *CreateLayer(const char* name, 
+        OGRLayerShadow *CreateLayer(const char* name,
               OSRSpatialReferenceShadow* srs=NULL,
               OGRwkbGeometryType geom_type=wkbUnknown,
               char** options=0) {
@@ -251,13 +256,13 @@ class GNMNetworkShadow : public GDALMajorObjectShadow
         #else
         OGRLayerShadow *GetLayerByIndex( int index=0) {
         #endif
-        OGRLayerShadow* layer = (OGRLayerShadow*) GDALDatasetGetLayer(self, 
+        OGRLayerShadow* layer = (OGRLayerShadow*) GDALDatasetGetLayer(self,
                                                                       index);
             return layer;
         }
 
         OGRLayerShadow *GetLayerByName( const char* layer_name) {
-            OGRLayerShadow* layer = 
+            OGRLayerShadow* layer =
                   (OGRLayerShadow*) GDALDatasetGetLayerByName(self, layer_name);
             return layer;
         }
@@ -307,58 +312,58 @@ class GNMGenericNetworkShadow : public GNMNetworkShadow
               GDALClose(self);
             }
         }
-        
+
         CPLErr ConnectFeatures (GNMGFID nSrcFID, GNMGFID nTgtFID,
                                 GNMGFID nConFID, double dfCost,
                                 double dfInvCost,
                                 GNMDirection eDir) {
             return GNMConnectFeatures(self, nSrcFID, nTgtFID,
-                                              nConFID, dfCost, dfInvCost, eDir);                        
+                                              nConFID, dfCost, dfInvCost, eDir);
         }
 
         CPLErr DisconnectFeatures (GNMGFID nSrcFID, GNMGFID nTgtFID,
                                    GNMGFID nConFID) {
             return GNMDisconnectFeatures(self, nSrcFID, nTgtFID,
-                                                           nConFID);                           
+                                                           nConFID);
         }
-        
+
         CPLErr DisconnectFeaturesWithId(GNMGFID nFID) {
             return GNMDisconnectFeaturesWithId(self, nFID);
         }
-        
+
         CPLErr ReconnectFeatures (GNMGFID nSrcFID, GNMGFID nTgtFID, GNMGFID nConFID,
                                   double dfCost, double dfInvCost,
                                   GNMDirection eDir) {
             return GNMReconnectFeatures(self, nSrcFID, nTgtFID, nConFID, dfCost, dfInvCost, eDir);
         }
-        
+
         %apply Pointer NONNULL {const char * pszRuleStr};
         CPLErr CreateRule (const char *pszRuleStr) {
             return GNMCreateRule(self, pszRuleStr);
         }
         %clear const char * pszRuleStr;
-        
+
         CPLErr DeleteAllRules() {
             return GNMDeleteAllRules(self);
         }
-        
+
         %apply Pointer NONNULL {const char * pszRuleStr};
         CPLErr DeleteRule(const char *pszRuleStr) {
             return GNMDeleteRule(self, pszRuleStr);
         }
         %clear const char * pszRuleStr;
-        
+
         %apply (char **CSL) {char **};
         char** GetRules() {
             return GNMGetRules(self);
         }
         %clear char **;
-        
+
         #ifndef SWIGJAVA
         %feature( "kwargs" ) ConnectPointsByLines;
         #endif
         %apply (char **options) { char ** papszLayerList };
-        CPLErr ConnectPointsByLines (char **papszLayerList, 
+        CPLErr ConnectPointsByLines (char **papszLayerList,
                                          double dfTolerance,
                                          double dfCost,
                                          double dfInvCost,
@@ -366,14 +371,14 @@ class GNMGenericNetworkShadow : public GNMNetworkShadow
             return GNMConnectPointsByLines(self, papszLayerList, dfTolerance, dfCost, dfInvCost, eDir);
         }
         %clear char **papszLayerList;
-         
+
         CPLErr ChangeBlockState (GNMGFID nFID, bool bIsBlock) {
             return GNMChangeBlockState(self, nFID, bIsBlock);
         }
-        
-        CPLErr ChangeAllBlockState (bool bIsBlock = false) {            
+
+        CPLErr ChangeAllBlockState (bool bIsBlock = false) {
             return GNMChangeAllBlockState(self, bIsBlock);
-        }                                    
+        }
     }
 };
 

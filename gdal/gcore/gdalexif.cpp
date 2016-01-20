@@ -37,6 +37,7 @@
 #include "cpl_string.h"
 #include "cpl_vsi.h"
 
+#include "gdal_priv.h"
 #include "gdalexif.h"
 
 CPL_CVSID("$Id$");
@@ -45,10 +46,10 @@ CPL_CVSID("$Id$");
 /*                         EXIFPrintData()                              */
 /************************************************************************/
 static void EXIFPrintData(char* pszData, GUInt16 type,
-                   GUInt32 count, unsigned char* data)
+                   GUInt32 count, const unsigned char* data)
 {
   const char* sep = "";
-  char  pszTemp[128];
+  char  szTemp[128];
   char* pszDataEnd = pszData;
 
   pszData[0]='\0';
@@ -58,20 +59,20 @@ static void EXIFPrintData(char* pszData, GUInt16 type,
   case TIFF_UNDEFINED:
   case TIFF_BYTE:
     for(;count>0;count--) {
-      sprintf(pszTemp, "%s%#02x", sep, *data++), sep = " ";
-      if (strlen(pszTemp) + pszDataEnd - pszData >= MAXSTRINGLENGTH)
+      snprintf(szTemp, sizeof(szTemp), "%s%#02x", sep, *data++), sep = " ";
+      if (strlen(szTemp) + pszDataEnd - pszData >= MAXSTRINGLENGTH)
           break;
-      strcat(pszDataEnd,pszTemp);
+      strcat(pszDataEnd,szTemp);
       pszDataEnd += strlen(pszDataEnd);
     }
     break;
 
   case TIFF_SBYTE:
     for(;count>0;count--) {
-      sprintf(pszTemp, "%s%d", sep, *(char *)data++), sep = " ";
-      if (strlen(pszTemp) + pszDataEnd - pszData >= MAXSTRINGLENGTH)
+      snprintf(szTemp, sizeof(szTemp), "%s%d", sep, *(const char *)data++), sep = " ";
+      if (strlen(szTemp) + pszDataEnd - pszData >= MAXSTRINGLENGTH)
           break;
-      strcat(pszDataEnd,pszTemp);
+      strcat(pszDataEnd,szTemp);
       pszDataEnd += strlen(pszDataEnd);
     }
     break;
@@ -82,104 +83,104 @@ static void EXIFPrintData(char* pszData, GUInt16 type,
     break;
 
   case TIFF_SHORT: {
-    register GUInt16 *wp = (GUInt16*)data;
+    const GUInt16 *wp = (const GUInt16*)data;
     for(;count>0;count--) {
-      sprintf(pszTemp, "%s%u", sep, *wp++), sep = " ";
-      if (strlen(pszTemp) + pszDataEnd - pszData >= MAXSTRINGLENGTH)
+      snprintf(szTemp, sizeof(szTemp), "%s%u", sep, *wp++), sep = " ";
+      if (strlen(szTemp) + pszDataEnd - pszData >= MAXSTRINGLENGTH)
           break;
-      strcat(pszDataEnd,pszTemp);
+      strcat(pszDataEnd,szTemp);
       pszDataEnd += strlen(pszDataEnd);
     }
     break;
   }
   case TIFF_SSHORT: {
-    register GInt16 *wp = (GInt16*)data;
+    const GInt16 *wp = (const GInt16*)data;
     for(;count>0;count--) {
-      sprintf(pszTemp, "%s%d", sep, *wp++);
+      snprintf(szTemp, sizeof(szTemp), "%s%d", sep, *wp++);
       sep = " ";
-      if (strlen(pszTemp) + pszDataEnd - pszData >= MAXSTRINGLENGTH)
+      if (strlen(szTemp) + pszDataEnd - pszData >= MAXSTRINGLENGTH)
           break;
-      strcat(pszDataEnd,pszTemp);
+      strcat(pszDataEnd,szTemp);
       pszDataEnd += strlen(pszDataEnd);
     }
     break;
   }
   case TIFF_LONG: {
-    register GUInt32 *lp = (GUInt32*)data;
+    const GUInt32 *lp = (const GUInt32*)data;
     for(;count>0;count--) {
-      sprintf(pszTemp, "%s%lu", sep, (unsigned long) *lp++);
+      snprintf(szTemp, sizeof(szTemp), "%s%lu", sep, (unsigned long) *lp++);
       sep = " ";
-      if (strlen(pszTemp) + pszDataEnd - pszData >= MAXSTRINGLENGTH)
+      if (strlen(szTemp) + pszDataEnd - pszData >= MAXSTRINGLENGTH)
           break;
-      strcat(pszDataEnd,pszTemp);
+      strcat(pszDataEnd,szTemp);
       pszDataEnd += strlen(pszDataEnd);
     }
     break;
   }
   case TIFF_SLONG: {
-    register GInt32 *lp = (GInt32*)data;
+    const GInt32 *lp = (const GInt32*)data;
     for(;count>0;count--) {
-      sprintf(pszTemp, "%s%ld", sep, (long) *lp++), sep = " ";
-      if (strlen(pszTemp) + pszDataEnd - pszData >= MAXSTRINGLENGTH)
+      snprintf(szTemp, sizeof(szTemp), "%s%ld", sep, (long) *lp++), sep = " ";
+      if (strlen(szTemp) + pszDataEnd - pszData >= MAXSTRINGLENGTH)
           break;
-      strcat(pszDataEnd,pszTemp);
+      strcat(pszDataEnd,szTemp);
       pszDataEnd += strlen(pszDataEnd);
     }
     break;
   }
   case TIFF_RATIONAL: {
-    register GUInt32 *lp = (GUInt32*)data;
+    const GUInt32 *lp = (const GUInt32*)data;
       //      if(bSwabflag)
       //      TIFFSwabArrayOfLong((GUInt32*) data, 2*count);
     for(;count>0;count--) {
       if( (lp[0]==0) && (lp[1] == 0) ) {
-          sprintf(pszTemp,"%s(0)",sep);
+          snprintf(szTemp, sizeof(szTemp), "%s(0)",sep);
       }
       else{
-          CPLsprintf(pszTemp, "%s(%g)", sep,
+          CPLsnprintf(szTemp, sizeof(szTemp), "%s(%g)", sep,
               (double) lp[0]/ (double)lp[1]);
       }
       sep = " ";
       lp += 2;
-      if (strlen(pszTemp) + pszDataEnd - pszData >= MAXSTRINGLENGTH)
+      if (strlen(szTemp) + pszDataEnd - pszData >= MAXSTRINGLENGTH)
           break;
-      strcat(pszDataEnd,pszTemp);
+      strcat(pszDataEnd,szTemp);
       pszDataEnd += strlen(pszDataEnd);
     }
     break;
   }
   case TIFF_SRATIONAL: {
-    register GInt32 *lp = (GInt32*)data;
+    const GInt32 *lp = (const GInt32*)data;
     for(;count>0;count--) {
-      CPLsprintf(pszTemp, "%s(%g)", sep,
+      CPLsnprintf(szTemp, sizeof(szTemp), "%s(%g)", sep,
           (float) lp[0]/ (float) lp[1]);
       sep = " ";
       lp += 2;
-      if (strlen(pszTemp) + pszDataEnd - pszData >= MAXSTRINGLENGTH)
+      if (strlen(szTemp) + pszDataEnd - pszData >= MAXSTRINGLENGTH)
           break;
-      strcat(pszDataEnd,pszTemp);
+      strcat(pszDataEnd,szTemp);
       pszDataEnd += strlen(pszDataEnd);
     }
     break;
   }
   case TIFF_FLOAT: {
-    register float *fp = (float *)data;
+    const float *fp = (const float *)data;
     for(;count>0;count--) {
-      CPLsprintf(pszTemp, "%s%g", sep, *fp++), sep = " ";
-      if (strlen(pszTemp) + pszDataEnd - pszData >= MAXSTRINGLENGTH)
+      CPLsnprintf(szTemp, sizeof(szTemp), "%s%g", sep, *fp++), sep = " ";
+      if (strlen(szTemp) + pszDataEnd - pszData >= MAXSTRINGLENGTH)
           break;
-      strcat(pszDataEnd,pszTemp);
+      strcat(pszDataEnd,szTemp);
       pszDataEnd += strlen(pszDataEnd);
     }
     break;
   }
   case TIFF_DOUBLE: {
-    register double *dp = (double *)data;
+    const double *dp = (const double *)data;
     for(;count>0;count--) {
-      CPLsprintf(pszTemp, "%s%g", sep, *dp++), sep = " ";
-      if (strlen(pszTemp) + pszDataEnd - pszData >= MAXSTRINGLENGTH)
+      CPLsnprintf(szTemp, sizeof(szTemp), "%s%g", sep, *dp++), sep = " ";
+      if (strlen(szTemp) + pszDataEnd - pszData >= MAXSTRINGLENGTH)
           break;
-      strcat(pszDataEnd,pszTemp);
+      strcat(pszDataEnd,szTemp);
       pszDataEnd += strlen(pszDataEnd);
     }
     break;
@@ -209,13 +210,13 @@ CPLErr EXIFExtractMetadata(char**& papszMetadata,
     GUInt16        nEntryCount;
     int space;
     unsigned int           n,i;
-    char          pszTemp[MAXSTRINGLENGTH];
-    char          pszName[128];
+    char          szTemp[MAXSTRINGLENGTH+1];
+    char          szName[128];
 
     VSILFILE* fp = (VSILFILE* )fpInL;
 
-    TIFFDirEntry *poTIFFDirEntry;
-    TIFFDirEntry *poTIFFDir;
+    GDALEXIFTIFFDirEntry *poTIFFDirEntry;
+    GDALEXIFTIFFDirEntry *poTIFFDir;
     const struct tagname *poExifTags ;
     const struct intr_tag *poInterTags = intr_tags;
     const struct gpsname *poGPSTags;
@@ -223,12 +224,13 @@ CPLErr EXIFExtractMetadata(char**& papszMetadata,
 /* -------------------------------------------------------------------- */
 /*      Read number of entry in directory                               */
 /* -------------------------------------------------------------------- */
-    if( VSIFSeekL(fp, nOffset+nTIFFHEADER, SEEK_SET) != 0
+    if( nOffset > INT_MAX - nTIFFHEADER ||
+        VSIFSeekL(fp, nOffset+nTIFFHEADER, SEEK_SET) != 0
         || VSIFReadL(&nEntryCount,1,sizeof(GUInt16),fp) != sizeof(GUInt16) )
     {
         CPLError( CE_Failure, CPLE_AppDefined,
-                  "Error reading EXIF Directory count at %d.",
-                  nOffset + nTIFFHEADER );
+                  "Error reading EXIF Directory count at " CPL_FRMT_GUIB,
+                  static_cast<vsi_l_offset>(nOffset) + nTIFFHEADER );
         return CE_Failure;
     }
 
@@ -248,13 +250,13 @@ CPLErr EXIFExtractMetadata(char**& papszMetadata,
         return CE_Warning;
     }
 
-    poTIFFDir = (TIFFDirEntry *)CPLMalloc(nEntryCount * sizeof(TIFFDirEntry));
+    poTIFFDir = (GDALEXIFTIFFDirEntry *)CPLMalloc(nEntryCount * sizeof(GDALEXIFTIFFDirEntry));
 
 /* -------------------------------------------------------------------- */
 /*      Read all directory entries                                      */
 /* -------------------------------------------------------------------- */
-    n = VSIFReadL(poTIFFDir, 1,nEntryCount*sizeof(TIFFDirEntry),fp);
-    if (n != nEntryCount*sizeof(TIFFDirEntry))
+    n = static_cast<int>(VSIFReadL(poTIFFDir, 1,nEntryCount*sizeof(GDALEXIFTIFFDirEntry),fp));
+    if (n != nEntryCount*sizeof(GDALEXIFTIFFDirEntry))
     {
         CPLError( CE_Failure, CPLE_AppDefined,
                   "Could not read all directories");
@@ -276,14 +278,14 @@ CPLErr EXIFExtractMetadata(char**& papszMetadata,
 /* -------------------------------------------------------------------- */
 /*      Find Tag name in table                                          */
 /* -------------------------------------------------------------------- */
-        pszName[0] = '\0';
-        pszTemp[0] = '\0';
+        szName[0] = '\0';
+        szTemp[0] = '\0';
 
         for (poExifTags = tagnames; poExifTags->tag; poExifTags++)
             if(poExifTags->tag == poTIFFDirEntry->tdir_tag) {
                 CPLAssert( NULL != poExifTags && NULL != poExifTags->name );
 
-                strcpy(pszName, poExifTags->name);
+                CPLStrlcpy(szName, poExifTags->name, sizeof(szName));
                 break;
             }
 
@@ -292,7 +294,7 @@ CPLErr EXIFExtractMetadata(char**& papszMetadata,
             for( poGPSTags = gpstags; poGPSTags->tag != 0xffff; poGPSTags++ )
                 if( poGPSTags->tag == poTIFFDirEntry->tdir_tag ) {
                     CPLAssert( NULL != poGPSTags && NULL != poGPSTags->name );
-                    strcpy(pszName, poGPSTags->name);
+                    CPLStrlcpy(szName, poGPSTags->name, sizeof(szName));
                     break;
                 }
         }
@@ -303,7 +305,7 @@ CPLErr EXIFExtractMetadata(char**& papszMetadata,
             for(poInterTags = intr_tags; poInterTags->tag; poInterTags++)
                 if(poInterTags->tag == poTIFFDirEntry->tdir_tag) {
                     CPLAssert( NULL != poInterTags && NULL != poInterTags->name );
-                    strcpy(pszName, poInterTags->name);
+                    CPLStrlcpy(szName, poInterTags->name, sizeof(szName));
                     break;
                 }
         }
@@ -311,21 +313,25 @@ CPLErr EXIFExtractMetadata(char**& papszMetadata,
 /* -------------------------------------------------------------------- */
 /*      Save important directory tag offset                             */
 /* -------------------------------------------------------------------- */
-        if( poTIFFDirEntry->tdir_tag == EXIFOFFSETTAG )
-            nExifOffset=poTIFFDirEntry->tdir_offset;
-        if( poTIFFDirEntry->tdir_tag == INTEROPERABILITYOFFSET )
-            nInterOffset=poTIFFDirEntry->tdir_offset;
-        if( poTIFFDirEntry->tdir_tag == GPSOFFSETTAG ) {
-            nGPSOffset=poTIFFDirEntry->tdir_offset;
+
+        // Our current API uses int32 and not uint32
+        if( poTIFFDirEntry->tdir_offset < INT_MAX )
+        {
+            if( poTIFFDirEntry->tdir_tag == EXIFOFFSETTAG )
+                nExifOffset=poTIFFDirEntry->tdir_offset;
+            else if( poTIFFDirEntry->tdir_tag == INTEROPERABILITYOFFSET )
+                nInterOffset=poTIFFDirEntry->tdir_offset;
+            else if( poTIFFDirEntry->tdir_tag == GPSOFFSETTAG )
+                nGPSOffset=poTIFFDirEntry->tdir_offset;
         }
 
 /* -------------------------------------------------------------------- */
 /*      If we didn't recognise the tag just ignore it.  To see all      */
 /*      tags comment out the continue.                                  */
 /* -------------------------------------------------------------------- */
-        if( pszName[0] == '\0' )
+        if( szName[0] == '\0' )
         {
-            sprintf( pszName, "EXIF_%d", poTIFFDirEntry->tdir_tag );
+            snprintf( szName, sizeof(szName), "EXIF_%d", poTIFFDirEntry->tdir_tag );
             continue;
         }
 
@@ -333,7 +339,7 @@ CPLErr EXIFExtractMetadata(char**& papszMetadata,
 /*      For UserComment we need to ignore the language binding and      */
 /*      just return the actual contents.                                */
 /* -------------------------------------------------------------------- */
-        if( EQUAL(pszName,"EXIF_UserComment")  )
+        if( EQUAL(szName,"EXIF_UserComment")  )
         {
             poTIFFDirEntry->tdir_type = TIFF_ASCII;
 
@@ -347,16 +353,16 @@ CPLErr EXIFExtractMetadata(char**& papszMetadata,
 /* -------------------------------------------------------------------- */
 /*      Make some UNDEFINED or BYTE fields ASCII for readability.       */
 /* -------------------------------------------------------------------- */
-        if( EQUAL(pszName,"EXIF_ExifVersion")
-            || EQUAL(pszName,"EXIF_FlashPixVersion")
-            || EQUAL(pszName,"EXIF_MakerNote")
-            || EQUAL(pszName,"GPSProcessingMethod") )
+        if( EQUAL(szName,"EXIF_ExifVersion")
+            || EQUAL(szName,"EXIF_FlashPixVersion")
+            || EQUAL(szName,"EXIF_MakerNote")
+            || EQUAL(szName,"GPSProcessingMethod") )
             poTIFFDirEntry->tdir_type = TIFF_ASCII;
 
 /* -------------------------------------------------------------------- */
 /*      Print tags                                                      */
 /* -------------------------------------------------------------------- */
-        int nDataWidth = TIFFDataWidth((TIFFDataType) poTIFFDirEntry->tdir_type);
+        int nDataWidth = TIFFDataWidth((GDALEXIFTIFFDataType) poTIFFDirEntry->tdir_type);
         space = poTIFFDirEntry->tdir_count * nDataWidth;
 
         /* Previous multiplication could overflow, hence this additional check */
@@ -402,7 +408,8 @@ CPLErr EXIFExtractMetadata(char**& papszMetadata,
                 }
             }
 
-            EXIFPrintData(pszTemp,
+            /* coverity[overrun-buffer-arg] */
+            EXIFPrintData(szTemp,
                           poTIFFDirEntry->tdir_type,
                           poTIFFDirEntry->tdir_count, data);
         }
@@ -414,8 +421,8 @@ CPLErr EXIFExtractMetadata(char**& papszMetadata,
             unsigned char *data = (unsigned char *)VSIMalloc(space);
 
             if (data) {
-                VSIFSeekL(fp,poTIFFDirEntry->tdir_offset+nTIFFHEADER,SEEK_SET);
-                VSIFReadL(data, 1, space, fp);
+                CPL_IGNORE_RET_VAL(VSIFSeekL(fp,poTIFFDirEntry->tdir_offset+nTIFFHEADER,SEEK_SET));
+                CPL_IGNORE_RET_VAL(VSIFReadL(data, 1, space, fp));
 
                 if (bSwabflag) {
                     switch (poTIFFDirEntry->tdir_type) {
@@ -444,7 +451,7 @@ CPLErr EXIFExtractMetadata(char**& papszMetadata,
                     }
                 }
 
-                EXIFPrintData(pszTemp, poTIFFDirEntry->tdir_type,
+                EXIFPrintData(szTemp, poTIFFDirEntry->tdir_type,
                               poTIFFDirEntry->tdir_count, data);
                 CPLFree(data);
             }
@@ -456,7 +463,7 @@ CPLErr EXIFExtractMetadata(char**& papszMetadata,
                       (long) space );
         }
 
-        papszMetadata = CSLSetNameValue(papszMetadata, pszName, pszTemp);
+        papszMetadata = CSLSetNameValue(papszMetadata, szName, szTemp);
     }
     CPLFree(poTIFFDir);
 

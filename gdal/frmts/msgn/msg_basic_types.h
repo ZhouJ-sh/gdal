@@ -32,10 +32,6 @@
 
 #include <math.h>
 
-#ifndef M_PI
-#define M_PI  3.1415926535897932384626433832795
-#endif
-
 namespace msg_native_format {
 
 const unsigned int      SATELLITESTATUS_RECORD_LENGTH   = 60134;
@@ -222,7 +218,7 @@ class Conversions {
 public:
     static void convert_pixel_to_geo(double line, double column, double& longitude, double& latitude);
     static void convert_geo_to_pixel(double longitude, double latitude, unsigned int& line, unsigned int& column);
-    
+
     static void compute_pixel_xyz(double line, double column, double& x, double& y, double& z);
     static double compute_pixel_area_sqkm(double line, double column);
 
@@ -234,15 +230,13 @@ public:
     static const double rad_to_deg; 
     static const double step;       // pixel / line step in degrees
     static const double nlines;     // number of lines in an image
-    
+
     static const int CFAC;     // Column scale factor
     static const int LFAC;     // Line scale factor
     static const int COFF;     // Column offset
     static const int LOFF;     // Line offset
-    
 };
 
 } // msg_native_format
 
 #endif
-

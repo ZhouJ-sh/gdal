@@ -219,7 +219,7 @@ void qh_check_maxout(void) {
         }
         if (dist > qh TRACEdist || (bestfacet && bestfacet == qh tracefacet))
           qh_fprintf(qh ferr, 8094, "qh_check_maxout: p%d is %.2g above f%d\n",
-                     qh_pointid(point), dist, bestfacet->id);
+                     qh_pointid(point), dist, bestfacet ? bestfacet->id : -1);
       }
     }
   }while
@@ -742,7 +742,7 @@ void qh_checkfacet(facetT *facet, boolT newmerge, boolT *waserrorp) {
       if (neighbor->simplicial) {
         skipA= SETindex_(facet->neighbors, neighbor);
         skipB= qh_setindex(neighbor->neighbors, facet);
-        if (!qh_setequal_skip(facet->vertices, skipA, neighbor->vertices, skipB)) {
+        if (skipB >= 0 && !qh_setequal_skip(facet->vertices, skipA, neighbor->vertices, skipB)) {
           qh_fprintf(qh ferr, 6135, "qhull internal error (qh_checkfacet): facet f%d skip %d and neighbor f%d skip %d do not match \n",
                    facet->id, skipA, neighbor->id, skipB);
           errother= neighbor;
@@ -2105,6 +2105,8 @@ void qh_matchduplicates(facetT *atfacet, int atskip, int hashsize, int *hashcoun
                      atfacet->id, atskip, hash);
         qh_errexit(qh_ERRqhull, atfacet, NULL);
       }
+      /* maxmatch cannot be NULL since above qh_errexit didn't return */
+      /* coverity[var_deref_op] */
       SETelem_(maxmatch->neighbors, maxskip)= maxmatch2;
       SETelem_(maxmatch2->neighbors, maxskip2)= maxmatch;
       *hashcount -= 2; /* removed two unmatched facets */
@@ -2228,7 +2230,7 @@ vertexT *qh_nearvertex(facetT *facet, pointT *point, realT *bestdistp) {
     qh_settempfree(&vertices);
   *bestdistp= sqrt(bestdist);
   trace3((qh ferr, 3019, "qh_nearvertex: v%d dist %2.2g for f%d p%d\n",
-        bestvertex->id, *bestdistp, facet->id, qh_pointid(point)));
+        bestvertex ? bestvertex->id : -1, *bestdistp, facet->id, qh_pointid(point)));
   return bestvertex;
 } /* nearvertex */
 
@@ -2418,7 +2420,7 @@ void qh_point_add(setT *set, pointT *point, void *elem) {
     qh_fprintf(qh ferr, 7067, "qhull internal warning (point_add): unknown point %p id %d\n",
       point, id);
   else if (id >= size) {
-    qh_fprintf(qh ferr, 6160, "qhull internal errror(point_add): point p%d is out of bounds(%d)\n",
+    qh_fprintf(qh ferr, 6160, "qhull internal error(point_add): point p%d is out of bounds(%d)\n",
              id, size);
     qh_errexit(qh_ERRqhull, NULL, NULL);
   }else
@@ -2828,7 +2830,7 @@ void qh_triangulate(void /*qh facet_list*/) {
       }
       if (owner)
         facet->f.triowner= owner;
-      else if (!facet->degenerate) {
+      else if (visible != NULL && !facet->degenerate) {
         owner= facet;
         nextfacet= visible->next; /* rescan tricoplanar facets with owner */
         facet->keepcentrum= True;  /* one facet owns ->normal, etc. */
@@ -3109,7 +3111,7 @@ void qh_vertexneighbors(void /*qh facet_list*/) {
 
   if (qh VERTEXneighbors)
     return;
-  trace1((qh ferr, 1035, "qh_vertexneighbors: determing neighboring facets for each vertex\n"));
+  trace1((qh ferr, 1035, "qh_vertexneighbors: determine neighboring facets for each vertex\n"));
   qh vertex_visit++;
   FORALLfacets {
     if (facet->visible)
